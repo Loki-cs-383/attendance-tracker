@@ -78,20 +78,6 @@
     .role-tab:hover { border-color: var(--primary); color: var(--text); }
     .role-tab.active { background: rgba(108,99,255,0.18); border-color: var(--primary); color: var(--white); }
 
-    /* Demo creds box */
-    .demo-creds {
-      background: rgba(108,99,255,0.08);
-      border: 1px solid rgba(108,99,255,0.2);
-      border-radius: 10px;
-      padding: 0.85rem 1rem;
-      margin-bottom: 1.25rem;
-      font-size: 0.82rem;
-    }
-    .demo-creds .cred-row { display: flex; justify-content: space-between; margin-bottom: 0.25rem; gap: 0.5rem; }
-    .demo-creds .cred-row:last-child { margin-bottom: 0; }
-    .demo-creds .label { color: var(--text-muted); }
-    .demo-creds .value { color: var(--primary); font-family: monospace; cursor: pointer; text-decoration: underline dotted; }
-
     /* Alert boxes */
     .alert {
       border-radius: 8px;
@@ -161,19 +147,6 @@
           <button class="role-tab" onclick="setSigninRole('student', this)">🎒 Student</button>
           <button class="role-tab active" onclick="setSigninRole('teacher', this)">👩‍🏫 Teacher</button>
           <button class="role-tab" onclick="setSigninRole('admin', this)">🛡️ Admin</button>
-        </div>
-      </div>
-
-      <!-- Demo creds -->
-      <div class="demo-creds">
-        <div style="font-size:0.72rem; color:var(--primary); font-weight:600; margin-bottom:0.5rem; text-transform:uppercase; letter-spacing:0.05em;">Demo credentials — click to fill</div>
-        <div class="cred-row">
-          <span class="label">Email:</span>
-          <span class="value" id="demoEmail" onclick="fillDemo()">sarah@school.edu</span>
-        </div>
-        <div class="cred-row">
-          <span class="label">Password:</span>
-          <span class="value" onclick="fillDemo()" id="demoPwd">teacher123</span>
         </div>
       </div>
 
@@ -263,12 +236,6 @@ let signinRole = 'teacher';
 let signupRole = 'student';
 let selectedAvatar = '🎒';
 
-const demoCreds = {
-  student: { email: 'aisha@school.edu',  password: 'student123' },
-  teacher: { email: 'sarah@school.edu',  password: 'teacher123' },
-  admin:   { email: 'admin@school.edu',  password: 'admin123'   },
-};
-
 const avatarsByRole = {
   student: ['🎒','👩‍💻','👨‍💻','👩‍🎓','👨‍🎓','👩‍🔬','👨‍🔬','🧑‍💻','🧑‍🎓'],
   teacher: ['👩‍🏫','👨‍🏫','👩‍🔬','👨‍🔬','👩‍💼','👨‍💼','🧑‍🏫','👩‍🏫','🎓'],
@@ -299,8 +266,6 @@ function setSigninRole(role, btn) {
   signinRole = role;
   document.querySelectorAll('#signinRoleTabs .role-tab').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  document.getElementById('demoEmail').textContent = demoCreds[role].email;
-  document.getElementById('demoPwd').textContent = demoCreds[role].password;
   clearAlerts();
 }
 
@@ -326,13 +291,6 @@ function selectAvatar(el, avatar) {
   document.querySelectorAll('.avatar-opt').forEach(a => a.classList.remove('selected'));
   el.classList.add('selected');
   selectedAvatar = avatar;
-}
-
-// ── DEMO FILL ─────────────────────────────────────────────
-function fillDemo() {
-  const c = demoCreds[signinRole];
-  document.getElementById('loginEmail').value = c.email;
-  document.getElementById('loginPassword').value = c.password;
 }
 
 // ── PASSWORD TOGGLE ───────────────────────────────────────
