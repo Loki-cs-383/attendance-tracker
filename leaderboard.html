@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Leaderboard — AttendTrack</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <script src="js/db.js"></script>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="index.html" class="nav-brand"><span class="logo-icon">🎓</span> AttendTrack</a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="checkin.html">Check-in</a>
+    <a href="leaderboard.html" class="active">Leaderboard</a>
+    <a href="reports.html">Reports</a>
+    <a href="about.html">About</a>
+  </div>
+  <div class="nav-toggle"><span></span><span></span><span></span></div>
+</nav>
+
+<div class="page-header">
+  <div class="container">
+    <h1>🏆 Class Leaderboard</h1>
+    <p>See who's leading the pack this week. Keep checking in to climb the ranks!</p>
+  </div>
+</div>
+
+<div class="section" style="padding-top:2rem;">
+  <div class="container">
+
+    <!-- FILTERS -->
+    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem; margin-bottom:2rem;">
+      <div class="tabs" id="periodTabs">
+        <button class="tab-btn active" onclick="filterPeriod('weekly', this)">📅 Weekly</button>
+        <button class="tab-btn" onclick="filterPeriod('monthly', this)">📆 Monthly</button>
+        <button class="tab-btn" onclick="filterPeriod('overall', this)">🏆 Overall</button>
+      </div>
+      <div style="display:flex; gap:0.5rem; align-items:center;">
+        <label style="font-size:0.85rem; color:var(--text-muted);">Class:</label>
+        <select onchange="filterClass(this.value)" style="background:var(--card); border:1px solid rgba(255,255,255,0.1); color:var(--text); padding:0.4rem 0.75rem; border-radius:8px; font-size:0.85rem; outline:none;">
+          <option value="all">All Classes</option>
+          <option value="CS101">CS101</option>
+          <option value="MATH201">MATH201</option>
+          <option value="PHY301">PHY301</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- TOP 3 PODIUM -->
+    <div style="display:flex; align-items:flex-end; justify-content:center; gap:1rem; margin-bottom:2.5rem; flex-wrap:wrap;" id="podium">
+      <!-- 2nd place -->
+      <div style="text-align:center; animation: fadeInUp 0.5s ease 0.1s both;">
+        <div style="font-size:2rem; margin-bottom:0.5rem;">👨‍🎓</div>
+        <div style="font-weight:600; font-size:0.9rem; margin-bottom:0.25rem;">Marcus Chen</div>
+        <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:0.5rem;">4,620 pts</div>
+        <div style="background:linear-gradient(135deg,#c0c0c0,#a0a0a0); border-radius:12px 12px 0 0; padding:1.5rem 2rem; min-width:100px;">
+          <div style="font-size:1.5rem; font-weight:800; color:var(--dark);">2</div>
+          <div style="font-size:0.7rem; color:rgba(0,0,0,0.6);">🥈 Silver</div>
+        </div>
+      </div>
+      <!-- 1st place -->
+      <div style="text-align:center; animation: fadeInUp 0.5s ease both;">
+        <div style="font-size:2.5rem; margin-bottom:0.5rem;">👩‍💻</div>
+        <div style="font-weight:700; font-size:1rem; margin-bottom:0.25rem;">Aisha Patel</div>
+        <div style="font-size:0.8rem; color:var(--warning); margin-bottom:0.5rem;">4,850 pts ⭐</div>
+        <div style="background:linear-gradient(135deg,#f9ca24,#f0932b); border-radius:12px 12px 0 0; padding:2rem 2.5rem; min-width:110px;">
+          <div style="font-size:2rem; font-weight:800; color:var(--dark);">1</div>
+          <div style="font-size:0.75rem; color:rgba(0,0,0,0.7);">🥇 Gold</div>
+        </div>
+      </div>
+      <!-- 3rd place -->
+      <div style="text-align:center; animation: fadeInUp 0.5s ease 0.2s both;">
+        <div style="font-size:2rem; margin-bottom:0.5rem;">👩‍🎓</div>
+        <div style="font-weight:600; font-size:0.9rem; margin-bottom:0.25rem;">Sofia Rodriguez</div>
+        <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:0.5rem;">4,390 pts</div>
+        <div style="background:linear-gradient(135deg,#cd7f32,#a0522d); border-radius:12px 12px 0 0; padding:1.25rem 2rem; min-width:100px;">
+          <div style="font-size:1.5rem; font-weight:800; color:var(--white);">3</div>
+          <div style="font-size:0.7rem; color:rgba(255,255,255,0.7);">🥉 Bronze</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <!-- LEADERBOARD LIST -->
+      <div>
+        <h3 style="margin-bottom:1rem; font-size:1rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em;">Full Rankings</h3>
+        <div id="leaderboardList"></div>
+      </div>
+
+      <!-- STATS SIDEBAR -->
+      <div>
+        <h3 style="margin-bottom:1rem; font-size:1rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em;">Your Stats</h3>
+        <div class="card" style="margin-bottom:1rem;">
+          <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1.25rem;">
+            <div style="font-size:2.5rem;">👩‍💻</div>
+            <div>
+              <div style="font-weight:700;">Aisha Patel</div>
+              <div style="font-size:0.8rem; color:var(--text-muted);">CS101 · MATH201</div>
+            </div>
+            <div class="rank rank-1" style="margin-left:auto;">#1</div>
+          </div>
+          <div class="progress-wrap">
+            <div class="progress-label"><span>Points to #1</span><span>You're #1! 🎉</span></div>
+            <div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div>
+          </div>
+          <div style="display:flex; gap:0.75rem; margin-top:1rem; flex-wrap:wrap;">
+            <div style="flex:1; text-align:center; background:rgba(249,202,36,0.1); border-radius:10px; padding:0.75rem;">
+              <div style="font-size:1.2rem; font-weight:700; color:var(--warning);">4,850</div>
+              <div style="font-size:0.7rem; color:var(--text-muted);">Points</div>
+            </div>
+            <div style="flex:1; text-align:center; background:rgba(255,101,132,0.1); border-radius:10px; padding:0.75rem;">
+              <div style="font-size:1.2rem; font-weight:700; color:var(--secondary);">🔥 21</div>
+              <div style="font-size:0.7rem; color:var(--text-muted);">Streak</div>
+            </div>
+            <div style="flex:1; text-align:center; background:rgba(108,99,255,0.1); border-radius:10px; padding:0.75rem;">
+              <div style="font-size:1.2rem; font-weight:700; color:var(--primary);">6</div>
+              <div style="font-size:0.7rem; color:var(--text-muted);">Badges</div>
+            </div>
+          </div>
+        </div>
+
+        <h3 style="margin-bottom:1rem; font-size:1rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em;">Top Badges This Week</h3>
+        <div class="card">
+          <div style="display:flex; flex-direction:column; gap:0.75rem;">
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:1.5rem;">🏆</span>
+              <div>
+                <div style="font-size:0.9rem; font-weight:600;">Champion</div>
+                <div style="font-size:0.75rem; color:var(--text-muted);">Earned by 3 students</div>
+              </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:1.5rem;">🔥</span>
+              <div>
+                <div style="font-size:0.9rem; font-weight:600;">On Fire</div>
+                <div style="font-size:0.75rem; color:var(--text-muted);">Earned by 7 students</div>
+              </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:1.5rem;">⚡</span>
+              <div>
+                <div style="font-size:0.9rem; font-weight:600;">Speed Star</div>
+                <div style="font-size:0.75rem; color:var(--text-muted);">Earned by 5 students</div>
+              </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:1.5rem;">🎯</span>
+              <div>
+                <div style="font-size:0.9rem; font-weight:600;">Bullseye</div>
+                <div style="font-size:0.75rem; color:var(--text-muted);">Earned by 4 students</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  <p>© 2026 AttendTrack — <a href="index.html">Home</a> · <a href="about.html">About</a></p>
+</footer>
+
+<script src="js/app.js"></script>
+<script>
+function renderLeaderboard(data) {
+  const list = document.getElementById('leaderboardList');
+  list.innerHTML = data.map(s => `
+    <div class="leaderboard-item" style="animation: slideIn 0.4s ease ${(s.rank - 1) * 0.05}s both;">
+      <div class="rank rank-${s.rank <= 3 ? s.rank : 'other'}">${s.rank <= 3 ? ['🥇','🥈','🥉'][s.rank-1] : s.rank}</div>
+      <div class="lb-avatar" style="background:rgba(108,99,255,0.15);">${s.avatar}</div>
+      <div class="lb-info">
+        <div class="lb-name">${s.name} ${s.rank === 1 ? '<span style="color:var(--warning)">👑</span>' : ''}</div>
+        <div class="lb-badges">${s.badges.join(' ')} &nbsp;🔥 ${s.streak}-day streak</div>
+      </div>
+      <div class="lb-points">
+        <div class="pts">${s.points.toLocaleString()}</div>
+        <div class="pts-label">points</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function filterPeriod(period, btn) {
+  document.querySelectorAll('#periodTabs .tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const multiplier = period === 'weekly' ? 0.15 : period === 'monthly' ? 0.6 : 1;
+  const base = DB.getLeaderboard();
+  const adjusted = base.map(s => ({ ...s, points: Math.floor(s.points * multiplier) }));
+  renderLeaderboard(adjusted);
+}
+
+function filterClass(cls) {
+  renderLeaderboard(DB.getLeaderboard(cls === 'all' ? null : cls));
+}
+
+function initPage() {
+  renderLeaderboard(DB.getLeaderboard());
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Check-in — AttendTrack</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <script src="js/db.js"></script>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="index.html" class="nav-brand"><span class="logo-icon">🎓</span> AttendTrack</a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="checkin.html" class="active">Check-in</a>
+    <a href="leaderboard.html">Leaderboard</a>
+    <a href="reports.html">Reports</a>
+    <a href="about.html">About</a>
+  </div>
+  <div class="nav-toggle"><span></span><span></span><span></span></div>
+</nav>
+
+<div class="page-header">
+  <div class="container">
+    <h1>✅ Manual Check-in</h1>
+    <p>Enter your class code and complete a quick quiz to confirm your attendance.</p>
+  </div>
+</div>
+
+<div class="section" style="padding-top:2.5rem;">
+  <div class="container">
+
+    <!-- POINTS BANNER -->
+    <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap; margin-bottom:2.5rem;">
+      <div style="display:flex; align-items:center; gap:0.5rem; background:rgba(249,202,36,0.1); border:1px solid rgba(249,202,36,0.2); padding:0.6rem 1.25rem; border-radius:50px; font-size:0.9rem;">
+        ⭐ <strong style="color:var(--warning);">4,850 pts</strong> <span style="color:var(--text-muted);">current balance</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:0.5rem; background:rgba(255,101,132,0.1); border:1px solid rgba(255,101,132,0.2); padding:0.6rem 1.25rem; border-radius:50px; font-size:0.9rem;">
+        🔥 <strong style="color:var(--secondary);">21-day streak</strong> <span style="color:var(--text-muted);">keep it going!</span>
+      </div>
+    </div>
+
+    <div class="checkin-card">
+
+      <!-- STEP INDICATOR -->
+      <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:2rem;" id="stepIndicator">
+        <div class="step-dot active" id="dot1" style="width:32px;height:32px;border-radius:50%;background:var(--gradient);display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;flex-shrink:0;">1</div>
+        <div style="flex:1;height:2px;background:rgba(255,255,255,0.1);" id="line1"></div>
+        <div class="step-dot" id="dot2" style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;flex-shrink:0;color:var(--text-muted);">2</div>
+        <div style="flex:1;height:2px;background:rgba(255,255,255,0.1);" id="line2"></div>
+        <div class="step-dot" id="dot3" style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;flex-shrink:0;color:var(--text-muted);">3</div>
+      </div>
+
+      <!-- STEP 1: Class Code -->
+      <div class="checkin-step active" id="step1">
+        <h2 style="margin-bottom:0.5rem;">Enter Class Code</h2>
+        <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1.5rem;">Ask your teacher for today's session code.</p>
+
+        <div class="input-group">
+          <label>Your Name</label>
+          <input type="text" id="studentName" placeholder="e.g. Aisha Patel" value="Aisha Patel" />
+        </div>
+
+        <div class="input-group">
+          <label>Select Class</label>
+          <select id="classSelect">
+            <option value="">— Choose a class —</option>
+          </select>
+        </div>
+
+        <div class="input-group">
+          <label>Class Code</label>
+          <input type="text" id="classCode" placeholder="e.g. CS101-XK9" maxlength="12"
+            style="text-transform:uppercase; letter-spacing:0.1em; font-size:1.1rem; font-weight:600;" />
+        </div>
+
+        <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:1.5rem;" id="codeHint">
+          💡 Hint: Ask your teacher for today's session code.
+        </p>
+
+        <button class="btn btn-primary" style="width:100%;" onclick="verifyCode()">
+          Continue to Quiz →
+        </button>
+        <div id="codeError" style="color:var(--secondary); font-size:0.85rem; margin-top:0.75rem; display:none;">
+          ❌ Invalid code. Please check with your teacher.
+        </div>
+      </div>
+
+      <!-- STEP 2: Quiz -->
+      <div class="checkin-step" id="step2">
+        <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom:1.5rem;">
+          <div style="background:rgba(108,99,255,0.15); border-radius:10px; padding:0.5rem 0.85rem; font-size:0.85rem; color:var(--primary);">
+            📚 CS101 — Algorithms
+          </div>
+          <span class="badge badge-green">Code Verified ✓</span>
+        </div>
+
+        <h2 style="margin-bottom:0.5rem;">Quick Attendance Quiz</h2>
+        <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1.5rem;">Answer this question to confirm you're in class.</p>
+
+        <div style="background:rgba(108,99,255,0.08); border:1px solid rgba(108,99,255,0.2); border-radius:12px; padding:1.25rem; margin-bottom:1.5rem;">
+          <div style="font-size:0.75rem; color:var(--primary); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.5rem;">Today's Question</div>
+          <p style="font-size:1rem; font-weight:500;" id="quizQuestion">What is the time complexity of Binary Search?</p>
+        </div>
+
+        <div id="quizOptions">
+          <label class="quiz-option" onclick="selectOption(this, false)">
+            <input type="radio" name="quiz" value="a" /> O(n)
+          </label>
+          <label class="quiz-option" onclick="selectOption(this, false)">
+            <input type="radio" name="quiz" value="b" /> O(n²)
+          </label>
+          <label class="quiz-option" onclick="selectOption(this, true)">
+            <input type="radio" name="quiz" value="c" /> O(log n)
+          </label>
+          <label class="quiz-option" onclick="selectOption(this, false)">
+            <input type="radio" name="quiz" value="d" /> O(1)
+          </label>
+        </div>
+
+        <button class="btn btn-primary" style="width:100%; margin-top:1.25rem;" id="submitQuizBtn" onclick="submitQuiz()" disabled>
+          Submit Answer & Check In
+        </button>
+      </div>
+
+      <!-- STEP 3: Success -->
+      <div class="checkin-step" id="step3">
+        <div class="success-animation">
+          <span class="success-icon">🎉</span>
+          <h2 style="font-size:1.5rem; margin-bottom:0.5rem;">Attendance Marked!</h2>
+          <p style="color:var(--text-muted); margin-bottom:1.5rem;">You're officially checked in for <strong id="confirmedClass">CS101</strong>.</p>
+
+          <div class="points-popup">
+            ⭐ <span id="earnedPoints">+50 Points Earned!</span>
+          </div>
+
+          <div class="badge-notification">
+            <span style="font-size:1.5rem;">🔥</span>
+            <div>
+              <div style="font-weight:600; font-size:0.9rem;">Streak Extended!</div>
+              <div style="font-size:0.8rem; color:var(--text-muted);" id="newStreak">You're on a 22-day streak. Keep it up!</div>
+            </div>
+          </div>
+
+          <div class="badge-notification" style="animation-delay:0.7s;">
+            <span style="font-size:1.5rem;">🏆</span>
+            <div>
+              <div style="font-weight:600; font-size:0.9rem;">New Badge Unlocked!</div>
+              <div style="font-size:0.8rem; color:var(--text-muted);">"Consistent Learner" — 20+ day streak achieved!</div>
+            </div>
+          </div>
+
+          <div style="display:flex; gap:1rem; justify-content:center; margin-top:2rem; flex-wrap:wrap;">
+            <a href="dashboard.html" class="btn btn-primary">View Dashboard</a>
+            <a href="leaderboard.html" class="btn btn-outline">See Leaderboard</a>
+          </div>
+
+          <button onclick="resetCheckin()" style="background:none; border:none; color:var(--text-muted); font-size:0.85rem; cursor:pointer; margin-top:1rem; text-decoration:underline;">
+            Check in to another class
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- INFO CARDS -->
+    <div class="grid-3" style="margin-top:2.5rem;">
+      <div class="card" style="text-align:center;">
+        <div style="font-size:2rem; margin-bottom:0.5rem;">⏰</div>
+        <h4 style="margin-bottom:0.25rem;">Check-in Window</h4>
+        <p style="font-size:0.85rem; color:var(--text-muted);">You have 15 minutes from class start to check in for full points.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div style="font-size:2rem; margin-bottom:0.5rem;">🎯</div>
+        <h4 style="margin-bottom:0.25rem;">Points System</h4>
+        <p style="font-size:0.85rem; color:var(--text-muted);">On time: 50 pts · Late: 25 pts · Correct quiz: +10 bonus pts</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div style="font-size:2rem; margin-bottom:0.5rem;">🔥</div>
+        <h4 style="margin-bottom:0.25rem;">Streak Bonus</h4>
+        <p style="font-size:0.85rem; color:var(--text-muted);">7-day streak: 2x points · 30-day streak: 3x points multiplier!</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  <p>© 2026 AttendTrack — <a href="index.html">Home</a> · <a href="about.html">About</a></p>
+</footer>
+
+<script src="js/app.js"></script>
+<script>
+let selectedCorrect = null;
+let currentSession = null;
+let currentUser = null;
+
+function initPage() {
+  // Populate class dropdown from DB
+  const classes = DB.getClasses();
+  const sel = document.getElementById('classSelect');
+  sel.innerHTML = '<option value="">— Choose a class —</option>' +
+    classes.map(c => `<option value="${c.classId}">${c.classId} — ${c.name}</option>`).join('');
+
+  currentUser = DB.currentUser();
+  // Pre-fill name if logged in
+  if (currentUser) {
+    const user = DB.getUserById(currentUser.userId);
+    if (user) {
+      document.getElementById('studentName').value = user.name;
+      document.getElementById('studentName').readOnly = true;
+      // Update points banner
+      document.querySelector('[id="pointsBanner"]') && (document.getElementById('pointsBanner').textContent = user.points.toLocaleString() + ' pts');
+    }
+  }
+}
+
+function verifyCode() {
+  const code = document.getElementById('classCode').value.trim().toUpperCase();
+  const cls = document.getElementById('classSelect').value;
+  const name = document.getElementById('studentName').value.trim();
+  const err = document.getElementById('codeError');
+
+  if (!name) { err.style.display = 'block'; err.textContent = '❌ Please enter your name.'; return; }
+  if (!cls)  { err.style.display = 'block'; err.textContent = '❌ Please select a class.'; return; }
+
+  // Look up session in DB
+  const session = DB.getSessionByCode(code);
+  if (!session) {
+    err.style.display = 'block';
+    err.textContent = '❌ Invalid code. Try CS101-XK9 for demo.';
+    return;
+  }
+  if (!session.active) {
+    err.style.display = 'block';
+    err.textContent = '❌ This session is no longer active.';
+    return;
+  }
+
+  err.style.display = 'none';
+  currentSession = session;
+
+  // Populate quiz from DB session
+  document.getElementById('quizQuestion').textContent = session.quizQuestion;
+  const optionsEl = document.getElementById('quizOptions');
+  optionsEl.innerHTML = session.quizOptions.map((opt, i) => `
+    <label class="quiz-option" onclick="selectOption(this, ${i === session.quizAnswer})">
+      <input type="radio" name="quiz" value="${i}" /> ${opt}
+    </label>
+  `).join('');
+
+  goToStep(2);
+}
+
+function selectOption(el, isCorrect) {
+  document.querySelectorAll('.quiz-option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedCorrect = isCorrect;
+  document.getElementById('submitQuizBtn').disabled = false;
+}
+
+function submitQuiz() {
+  const selected = document.querySelector('.quiz-option.selected');
+  if (!selected || !currentSession) return;
+
+  if (selectedCorrect) {
+    selected.classList.add('correct');
+    showToast('🎯', 'Correct answer! +10 bonus points!');
+  } else {
+    selected.classList.add('wrong');
+    // Highlight correct answer
+    document.querySelectorAll('.quiz-option')[currentSession.quizAnswer]?.classList.add('correct');
+    showToast('💡', 'Not quite, but attendance still marked!');
+  }
+
+  document.getElementById('submitQuizBtn').disabled = true;
+
+  // Write to DB if logged in
+  if (currentUser) {
+    const result = DB.markAttendance(currentUser.userId, currentSession.id, currentSession.classId, 'Present', selectedCorrect);
+    if (result.error) { showToast('⚠️', result.error); }
+    else {
+      const user = DB.getUserById(currentUser.userId);
+      document.getElementById('earnedPoints').textContent = '+' + result.points + ' Points Earned!';
+      document.getElementById('newStreak').textContent = 'You\'re on a ' + (user?.streak || 0) + '-day streak. Keep it up!';
+      // Check badge milestones
+      if (user?.streak >= 7) DB.awardBadge(currentUser.userId, '🔥', 'On Fire');
+      if (user?.streak >= 21) DB.awardBadge(currentUser.userId, '🏆', 'Champion');
+    }
+  }
+
+  document.getElementById('confirmedClass').textContent = currentSession.classId;
+  setTimeout(() => goToStep(3), 1000);
+}
+
+function goToStep(n) {
+  document.querySelectorAll('.checkin-step').forEach(s => s.classList.remove('active'));
+  document.getElementById('step' + n).classList.add('active');
+  for (let i = 1; i <= 3; i++) {
+    const dot = document.getElementById('dot' + i);
+    if (i < n) { dot.style.background = 'var(--gradient2)'; dot.textContent = '✓'; dot.style.color = 'var(--dark)'; }
+    else if (i === n) { dot.style.background = 'var(--gradient)'; dot.style.color = 'var(--white)'; }
+    else { dot.style.background = 'rgba(255,255,255,0.08)'; dot.style.color = 'var(--text-muted)'; }
+  }
+  if (n >= 2) document.getElementById('line1').style.background = 'var(--accent)';
+  if (n >= 3) document.getElementById('line2').style.background = 'var(--accent)';
+}
+
+function resetCheckin() {
+  document.getElementById('classCode').value = '';
+  document.getElementById('classSelect').value = '';
+  document.querySelectorAll('.quiz-option').forEach(o => o.classList.remove('selected', 'correct', 'wrong'));
+  document.getElementById('submitQuizBtn').disabled = true;
+  selectedCorrect = null;
+  currentSession = null;
+  goToStep(1);
+}
+</script>
+</body>
+</html>

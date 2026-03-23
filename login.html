@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login — AttendTrack</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .login-wrap {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .login-wrap::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 30% 40%, rgba(108,99,255,0.18) 0%, transparent 55%),
+                  radial-gradient(ellipse at 70% 60%, rgba(255,101,132,0.12) 0%, transparent 55%);
+    }
+    .login-box {
+      background: var(--card);
+      border: 1px solid rgba(108,99,255,0.2);
+      border-radius: 24px;
+      padding: 2.5rem;
+      width: 100%;
+      max-width: 480px;
+      position: relative;
+      animation: fadeInUp 0.5s ease;
+    }
+
+    /* Mode toggle (Sign In / Sign Up) */
+    .mode-toggle {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      background: rgba(255,255,255,0.04);
+      border-radius: 12px;
+      padding: 0.3rem;
+      margin-bottom: 1.75rem;
+    }
+    .mode-btn {
+      padding: 0.6rem;
+      border-radius: 9px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      text-align: center;
+    }
+    .mode-btn.active { background: var(--primary); color: var(--white); }
+
+    /* Role selector */
+    .role-tabs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.4rem;
+      margin-bottom: 1.5rem;
+    }
+    .role-tab {
+      padding: 0.65rem 0.4rem;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.03);
+      color: var(--text-muted);
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      text-align: center;
+    }
+    .role-tab:hover { border-color: var(--primary); color: var(--text); }
+    .role-tab.active { background: rgba(108,99,255,0.18); border-color: var(--primary); color: var(--white); }
+
+    /* Demo creds box */
+    .demo-creds {
+      background: rgba(108,99,255,0.08);
+      border: 1px solid rgba(108,99,255,0.2);
+      border-radius: 10px;
+      padding: 0.85rem 1rem;
+      margin-bottom: 1.25rem;
+      font-size: 0.82rem;
+    }
+    .demo-creds .cred-row { display: flex; justify-content: space-between; margin-bottom: 0.25rem; gap: 0.5rem; }
+    .demo-creds .cred-row:last-child { margin-bottom: 0; }
+    .demo-creds .label { color: var(--text-muted); }
+    .demo-creds .value { color: var(--primary); font-family: monospace; cursor: pointer; text-decoration: underline dotted; }
+
+    /* Alert boxes */
+    .alert {
+      border-radius: 8px;
+      padding: 0.65rem 1rem;
+      font-size: 0.85rem;
+      margin-bottom: 1rem;
+      display: none;
+    }
+    .alert-error { background: rgba(255,101,132,0.1); border: 1px solid rgba(255,101,132,0.25); color: var(--secondary); }
+    .alert-success { background: rgba(67,233,123,0.1); border: 1px solid rgba(67,233,123,0.25); color: var(--accent); }
+
+    /* Password strength */
+    .pwd-strength { margin-top: 0.4rem; height: 4px; border-radius: 4px; background: rgba(255,255,255,0.08); overflow: hidden; }
+    .pwd-strength-fill { height: 100%; border-radius: 4px; width: 0; transition: width 0.3s, background 0.3s; }
+
+    /* Form section visibility */
+    .form-section { display: none; }
+    .form-section.active { display: block; animation: fadeInUp 0.3s ease; }
+
+    /* Avatar picker */
+    .avatar-grid { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.5rem; }
+    .avatar-opt {
+      width: 40px; height: 40px; border-radius: 10px;
+      border: 2px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.04);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem; cursor: pointer; transition: var(--transition);
+    }
+    .avatar-opt:hover { border-color: var(--primary); }
+    .avatar-opt.selected { border-color: var(--primary); background: rgba(108,99,255,0.2); }
+
+    .divider {
+      display: flex; align-items: center; gap: 0.75rem;
+      color: var(--text-muted); font-size: 0.8rem; margin: 1.25rem 0;
+    }
+    .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.08); }
+  </style>
+</head>
+<body>
+
+<div class="login-wrap">
+  <div class="login-box">
+
+    <!-- BRAND -->
+    <div style="text-align:center; margin-bottom:1.75rem;">
+      <div style="font-size:2.5rem; margin-bottom:0.4rem;">🎓</div>
+      <h1 style="font-size:1.5rem; font-weight:800; background:var(--gradient); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">AttendTrack</h1>
+      <p style="font-size:0.82rem; color:var(--text-muted); margin-top:0.2rem;">Digital Attendance & Productivity Tracker</p>
+    </div>
+
+    <!-- SIGN IN / SIGN UP TOGGLE -->
+    <div class="mode-toggle">
+      <button class="mode-btn active" id="signinBtn" onclick="setMode('signin')">Sign In</button>
+      <button class="mode-btn" id="signupBtn" onclick="setMode('signup')">Create Account</button>
+    </div>
+
+    <!-- ALERT MESSAGES -->
+    <div class="alert alert-error" id="errorMsg"></div>
+    <div class="alert alert-success" id="successMsg"></div>
+
+    <!-- ══════════ SIGN IN FORM ══════════ -->
+    <div class="form-section active" id="signinForm">
+
+      <div style="margin-bottom:1.25rem;">
+        <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:0.75rem; text-transform:uppercase; letter-spacing:0.05em;">Sign in as</div>
+        <div class="role-tabs" id="signinRoleTabs">
+          <button class="role-tab" onclick="setSigninRole('student', this)">🎒 Student</button>
+          <button class="role-tab active" onclick="setSigninRole('teacher', this)">👩‍🏫 Teacher</button>
+          <button class="role-tab" onclick="setSigninRole('admin', this)">🛡️ Admin</button>
+        </div>
+      </div>
+
+      <!-- Demo creds -->
+      <div class="demo-creds">
+        <div style="font-size:0.72rem; color:var(--primary); font-weight:600; margin-bottom:0.5rem; text-transform:uppercase; letter-spacing:0.05em;">Demo credentials — click to fill</div>
+        <div class="cred-row">
+          <span class="label">Email:</span>
+          <span class="value" id="demoEmail" onclick="fillDemo()">sarah@school.edu</span>
+        </div>
+        <div class="cred-row">
+          <span class="label">Password:</span>
+          <span class="value" onclick="fillDemo()" id="demoPwd">teacher123</span>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label>Email Address</label>
+        <input type="email" id="loginEmail" placeholder="your@school.edu" />
+      </div>
+      <div class="input-group" style="margin-bottom:1.5rem;">
+        <label>Password</label>
+        <div style="position:relative;">
+          <input type="password" id="loginPassword" placeholder="••••••••" style="padding-right:3rem;" />
+          <button onclick="togglePwd('loginPassword','eyeLogin')" style="position:absolute;right:0.75rem;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:1rem;" id="eyeLogin">👁️</button>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" style="width:100%;justify-content:center;font-size:1rem;" onclick="doLogin()" id="loginBtn">
+        Sign In →
+      </button>
+
+      <div class="divider">or</div>
+      <p style="text-align:center; font-size:0.85rem; color:var(--text-muted);">
+        New here? <a href="#" onclick="setMode('signup')" style="color:var(--primary); font-weight:600;">Create a free account</a>
+      </p>
+    </div>
+
+    <!-- ══════════ SIGN UP FORM ══════════ -->
+    <div class="form-section" id="signupForm">
+
+      <div style="margin-bottom:1.25rem;">
+        <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:0.75rem; text-transform:uppercase; letter-spacing:0.05em;">I am a</div>
+        <div class="role-tabs" id="signupRoleTabs">
+          <button class="role-tab active" onclick="setSignupRole('student', this)">🎒 Student</button>
+          <button class="role-tab" onclick="setSignupRole('teacher', this)">👩‍🏫 Teacher</button>
+          <button class="role-tab" onclick="setSignupRole('admin', this)">🛡️ Admin</button>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label>Full Name</label>
+        <input type="text" id="regName" placeholder="e.g. Jane Doe" />
+      </div>
+      <div class="input-group">
+        <label>Email Address</label>
+        <input type="email" id="regEmail" placeholder="your@school.edu" />
+      </div>
+      <div class="input-group">
+        <label>Password</label>
+        <div style="position:relative;">
+          <input type="password" id="regPassword" placeholder="Min. 6 characters" style="padding-right:3rem;" oninput="checkStrength(this.value)" />
+          <button onclick="togglePwd('regPassword','eyeReg')" style="position:absolute;right:0.75rem;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:1rem;" id="eyeReg">👁️</button>
+        </div>
+        <div class="pwd-strength"><div class="pwd-strength-fill" id="pwdBar"></div></div>
+        <div style="font-size:0.72rem; color:var(--text-muted); margin-top:0.3rem;" id="pwdLabel"></div>
+      </div>
+      <div class="input-group" style="margin-bottom:1rem;">
+        <label>Confirm Password</label>
+        <input type="password" id="regConfirm" placeholder="Re-enter password" />
+      </div>
+
+      <!-- Avatar picker -->
+      <div class="input-group" style="margin-bottom:1.5rem;">
+        <label>Pick an Avatar</label>
+        <div class="avatar-grid" id="avatarGrid"></div>
+      </div>
+
+      <button class="btn btn-success" style="width:100%;justify-content:center;font-size:1rem;" onclick="doRegister()" id="registerBtn">
+        Create Account 🚀
+      </button>
+
+      <div class="divider">or</div>
+      <p style="text-align:center; font-size:0.85rem; color:var(--text-muted);">
+        Already have an account? <a href="#" onclick="setMode('signin')" style="color:var(--primary); font-weight:600;">Sign in</a>
+      </p>
+    </div>
+
+    <p style="text-align:center; font-size:0.78rem; color:var(--text-muted); margin-top:1.5rem;">
+      <a href="index.html" style="color:var(--text-muted);">← Back to Home</a>
+    </p>
+
+  </div>
+</div>
+
+<script src="js/db.js"></script>
+<script>
+// ── STATE ──────────────────────────────────────────────────
+let signinRole = 'teacher';
+let signupRole = 'student';
+let selectedAvatar = '🎒';
+
+const demoCreds = {
+  student: { email: 'aisha@school.edu',  password: 'student123' },
+  teacher: { email: 'sarah@school.edu',  password: 'teacher123' },
+  admin:   { email: 'admin@school.edu',  password: 'admin123'   },
+};
+
+const avatarsByRole = {
+  student: ['🎒','👩‍💻','👨‍💻','👩‍🎓','👨‍🎓','👩‍🔬','👨‍🔬','🧑‍💻','🧑‍🎓'],
+  teacher: ['👩‍🏫','👨‍🏫','👩‍🔬','👨‍🔬','👩‍💼','👨‍💼','🧑‍🏫','👩‍🏫','🎓'],
+  admin:   ['🛡️','👩‍💼','👨‍💼','🧑‍💼','⚙️','🔐','🏛️','📋','🖥️'],
+};
+
+const redirectMap = { student: 'dashboard.html', teacher: 'reports.html', admin: 'admin.html' };
+
+// ── INIT ──────────────────────────────────────────────────
+// Redirect if already logged in
+const existing = DB.currentUser();
+if (existing) window.location.href = redirectMap[existing.role] || 'index.html';
+
+// Build avatar grid on load
+buildAvatarGrid('student');
+
+// ── MODE SWITCH ───────────────────────────────────────────
+function setMode(mode) {
+  clearAlerts();
+  document.getElementById('signinForm').classList.toggle('active', mode === 'signin');
+  document.getElementById('signupForm').classList.toggle('active', mode === 'signup');
+  document.getElementById('signinBtn').classList.toggle('active', mode === 'signin');
+  document.getElementById('signupBtn').classList.toggle('active', mode === 'signup');
+}
+
+// ── ROLE SELECTORS ────────────────────────────────────────
+function setSigninRole(role, btn) {
+  signinRole = role;
+  document.querySelectorAll('#signinRoleTabs .role-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('demoEmail').textContent = demoCreds[role].email;
+  document.getElementById('demoPwd').textContent = demoCreds[role].password;
+  clearAlerts();
+}
+
+function setSignupRole(role, btn) {
+  signupRole = role;
+  document.querySelectorAll('#signupRoleTabs .role-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  buildAvatarGrid(role);
+  clearAlerts();
+}
+
+// ── AVATAR GRID ───────────────────────────────────────────
+function buildAvatarGrid(role) {
+  const grid = document.getElementById('avatarGrid');
+  const avatars = avatarsByRole[role];
+  selectedAvatar = avatars[0];
+  grid.innerHTML = avatars.map((a, i) => `
+    <div class="avatar-opt ${i === 0 ? 'selected' : ''}" onclick="selectAvatar(this, '${a}')">${a}</div>
+  `).join('');
+}
+
+function selectAvatar(el, avatar) {
+  document.querySelectorAll('.avatar-opt').forEach(a => a.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedAvatar = avatar;
+}
+
+// ── DEMO FILL ─────────────────────────────────────────────
+function fillDemo() {
+  const c = demoCreds[signinRole];
+  document.getElementById('loginEmail').value = c.email;
+  document.getElementById('loginPassword').value = c.password;
+}
+
+// ── PASSWORD TOGGLE ───────────────────────────────────────
+function togglePwd(inputId, btnId) {
+  const inp = document.getElementById(inputId);
+  const btn = document.getElementById(btnId);
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+  btn.textContent = inp.type === 'password' ? '👁️' : '🙈';
+}
+
+// ── PASSWORD STRENGTH ─────────────────────────────────────
+function checkStrength(val) {
+  const bar = document.getElementById('pwdBar');
+  const lbl = document.getElementById('pwdLabel');
+  if (!val) { bar.style.width = '0'; lbl.textContent = ''; return; }
+  let score = 0;
+  if (val.length >= 6) score++;
+  if (val.length >= 10) score++;
+  if (/[A-Z]/.test(val)) score++;
+  if (/[0-9]/.test(val)) score++;
+  if (/[^A-Za-z0-9]/.test(val)) score++;
+  const levels = [
+    { w: '20%', color: '#ff6584', text: 'Too weak' },
+    { w: '40%', color: '#f0932b', text: 'Weak' },
+    { w: '60%', color: '#f9ca24', text: 'Fair' },
+    { w: '80%', color: '#6c63ff', text: 'Good' },
+    { w: '100%', color: '#43e97b', text: 'Strong 💪' },
+  ];
+  const lvl = levels[Math.min(score - 1, 4)] || levels[0];
+  bar.style.width = lvl.w;
+  bar.style.background = lvl.color;
+  lbl.textContent = lvl.text;
+  lbl.style.color = lvl.color;
+}
+
+// ── ALERTS ────────────────────────────────────────────────
+function showError(msg) {
+  const el = document.getElementById('errorMsg');
+  el.textContent = '❌ ' + msg;
+  el.style.display = 'block';
+  document.getElementById('successMsg').style.display = 'none';
+}
+
+function showSuccess(msg) {
+  const el = document.getElementById('successMsg');
+  el.textContent = '✅ ' + msg;
+  el.style.display = 'block';
+  document.getElementById('errorMsg').style.display = 'none';
+}
+
+function clearAlerts() {
+  document.getElementById('errorMsg').style.display = 'none';
+  document.getElementById('successMsg').style.display = 'none';
+}
+
+// ── SIGN IN ───────────────────────────────────────────────
+function doLogin() {
+  const email    = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  const btn      = document.getElementById('loginBtn');
+
+  if (!email || !password) { showError('Please enter your email and password.'); return; }
+
+  btn.textContent = 'Signing in...';
+  btn.disabled = true;
+
+  setTimeout(() => {
+    const session = DB.login(email, password);
+    if (!session) {
+      showError('Invalid email or password. Please try again.');
+      btn.textContent = 'Sign In →';
+      btn.disabled = false;
+      return;
+    }
+    showSuccess('Welcome back, ' + session.name.split(' ')[0] + '! Redirecting...');
+    setTimeout(() => { window.location.href = redirectMap[session.role] || 'index.html'; }, 800);
+  }, 600);
+}
+
+// ── REGISTER ──────────────────────────────────────────────
+function doRegister() {
+  const name     = document.getElementById('regName').value.trim();
+  const email    = document.getElementById('regEmail').value.trim();
+  const password = document.getElementById('regPassword').value;
+  const confirm  = document.getElementById('regConfirm').value;
+  const btn      = document.getElementById('registerBtn');
+
+  // Validation
+  if (!name)                          { showError('Please enter your full name.'); return; }
+  if (!email || !email.includes('@')) { showError('Please enter a valid email address.'); return; }
+  if (password.length < 6)            { showError('Password must be at least 6 characters.'); return; }
+  if (password !== confirm)           { showError('Passwords do not match.'); return; }
+
+  // Check duplicate email
+  const existing = DB._get('users').find(u => u.email === email);
+  if (existing) { showError('An account with this email already exists. Try signing in.'); return; }
+
+  btn.textContent = 'Creating account...';
+  btn.disabled = true;
+
+  setTimeout(() => {
+    // Save new user to DB
+    const users = DB._get('users');
+    const newUser = {
+      id: DB._nextId('users'),
+      name,
+      email,
+      password,
+      role: signupRole,
+      avatar: selectedAvatar,
+      points: 0,
+      streak: 0,
+      classes: [],
+      createdAt: new Date().toISOString().split('T')[0],
+    };
+    users.push(newUser);
+    DB._set('users', users);
+
+    // Add welcome notification
+    DB.addNotification(newUser.id, 'Welcome to AttendTrack, ' + name.split(' ')[0] + '! 🎉 Start by checking in to your first class.');
+
+    // Auto login
+    const session = DB.login(email, password);
+    showSuccess('Account created! Welcome, ' + name.split(' ')[0] + '! 🎉');
+
+    setTimeout(() => { window.location.href = redirectMap[signupRole] || 'index.html'; }, 1000);
+  }, 700);
+}
+
+// Enter key support
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  const signinActive = document.getElementById('signinForm').classList.contains('active');
+  if (signinActive) doLogin(); else doRegister();
+});
+</script>
+</body>
+</html>

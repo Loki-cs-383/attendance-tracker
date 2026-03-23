@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Digital Attendance & Productivity Tracker</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <script src="js/db.js"></script>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <a href="index.html" class="nav-brand">
+    <span class="logo-icon">🎓</span> AttendTrack
+  </a>
+  <div class="nav-links">
+    <a href="index.html" class="active">Home</a>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="checkin.html">Check-in</a>
+    <a href="leaderboard.html">Leaderboard</a>
+    <a href="reports.html">Reports</a>
+    <a href="about.html">About</a>
+  </div>
+  <div class="nav-toggle" aria-label="Toggle menu">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-badge">🚀 Gamified Learning Platform</div>
+    <h1>Digital Attendance &<br><span>Productivity Tracker</span></h1>
+    <p>Transform attendance into an engaging experience. Earn points, unlock badges, and compete with classmates — all while building better study habits.</p>
+    <div class="hero-buttons">
+      <a href="checkin.html" class="btn btn-primary">✅ Check In Now</a>
+      <a href="dashboard.html" class="btn btn-outline">📊 View Dashboard</a>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="number" id="stat1">0</div>
+        <div class="label">Active Students</div>
+      </div>
+      <div class="hero-stat">
+        <div class="number" id="stat2">0</div>
+        <div class="label">Classes Tracked</div>
+      </div>
+      <div class="hero-stat">
+        <div class="number" id="stat3">0</div>
+        <div class="label">Badges Awarded</div>
+      </div>
+      <div class="hero-stat">
+        <div class="number" id="stat4">0</div>
+        <div class="label">Points Earned Today</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="section" style="background: var(--dark2);">
+  <div class="container">
+    <div style="text-align:center; margin-bottom:3rem;">
+      <h2 class="section-title">Everything You Need to <span style="background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Stay on Track</span></h2>
+      <p class="section-subtitle">Built for students and teachers who want more than just a roll call.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <span class="feature-icon">✅</span>
+        <h3>Smart Check-in</h3>
+        <p>Verify attendance with class codes and quick quizzes to prevent proxy attendance.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🏆</span>
+        <h3>Gamified Rewards</h3>
+        <p>Earn points and unlock badges for consistent attendance and productivity milestones.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">📊</span>
+        <h3>Real-time Analytics</h3>
+        <p>Visual dashboards showing attendance trends, productivity scores, and progress over time.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🔥</span>
+        <h3>Streak Tracking</h3>
+        <p>Build daily streaks to stay motivated and earn bonus points for consistency.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🏅</span>
+        <h3>Class Leaderboard</h3>
+        <p>See where you rank among classmates and compete for the top spot each week.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">📋</span>
+        <h3>Teacher Reports</h3>
+        <p>Detailed attendance reports with export options and automated reminder notifications.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="section">
+  <div class="container">
+    <div style="text-align:center; margin-bottom:3rem;">
+      <h2 class="section-title">How It Works</h2>
+      <p class="section-subtitle">Three simple steps to get started.</p>
+    </div>
+    <div class="grid-3">
+      <div class="card" style="text-align:center; padding:2rem;">
+        <div style="font-size:3rem; margin-bottom:1rem;">1️⃣</div>
+        <h3 style="margin-bottom:0.5rem;">Enter Class Code</h3>
+        <p style="color:var(--text-muted); font-size:0.9rem;">Your teacher shares a unique code for each session. Enter it to begin check-in.</p>
+      </div>
+      <div class="card" style="text-align:center; padding:2rem;">
+        <div style="font-size:3rem; margin-bottom:1rem;">2️⃣</div>
+        <h3 style="margin-bottom:0.5rem;">Answer a Quick Quiz</h3>
+        <p style="color:var(--text-muted); font-size:0.9rem;">Confirm you're actually in class by answering a simple question from the lesson.</p>
+      </div>
+      <div class="card" style="text-align:center; padding:2rem;">
+        <div style="font-size:3rem; margin-bottom:1rem;">3️⃣</div>
+        <h3 style="margin-bottom:0.5rem;">Earn Points & Badges</h3>
+        <p style="color:var(--text-muted); font-size:0.9rem;">Get instant rewards, build your streak, and climb the leaderboard.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="section" style="background: var(--dark2); text-align:center;">
+  <div class="container" style="max-width:600px;">
+    <div style="font-size:3rem; margin-bottom:1rem;">🚀</div>
+    <h2 style="font-size:1.8rem; font-weight:700; margin-bottom:1rem;">Ready to Level Up Your Attendance?</h2>
+    <p style="color:var(--text-muted); margin-bottom:2rem;">Join thousands of students already earning rewards for showing up.</p>
+    <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
+      <a href="checkin.html" class="btn btn-primary">Get Started Free</a>
+      <a href="about.html" class="btn btn-outline">Learn More</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>© 2026 AttendTrack — Digital Attendance & Productivity Tracker &nbsp;|&nbsp; <a href="about.html">About</a> &nbsp;|&nbsp; <a href="reports.html">Reports</a></p>
+</footer>
+
+<script src="js/app.js"></script>
+<script>
+  function initPage() {
+    animateCounter(document.getElementById('stat1'), 1240);
+    animateCounter(document.getElementById('stat2'), 48);
+    animateCounter(document.getElementById('stat3'), 3870);
+    animateCounter(document.getElementById('stat4'), 12450);
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reports — AttendTrack</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <script src="js/db.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="index.html" class="nav-brand"><span class="logo-icon">🎓</span> AttendTrack</a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="checkin.html">Check-in</a>
+    <a href="leaderboard.html">Leaderboard</a>
+    <a href="reports.html" class="active">Reports</a>
+    <a href="about.html">About</a>
+  </div>
+  <div class="nav-toggle"><span></span><span></span><span></span></div>
+</nav>
+
+<div class="page-header">
+  <div class="container">
+    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem;">
+      <div>
+        <h1>📋 Teacher / Admin Reports</h1>
+        <p>Class-wise attendance analytics, trends, and student productivity scores.</p>
+      </div>
+      <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
+        <button class="btn btn-outline btn-sm" onclick="exportCSV()">⬇️ Export CSV</button>
+        <button class="btn btn-outline btn-sm" onclick="exportPDF()">📄 Export PDF</button>
+        <button class="btn btn-primary btn-sm" onclick="sendReminders()">🔔 Send Reminders</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="padding-top:2rem;">
+  <div class="container">
+
+    <!-- SUMMARY STATS -->
+    <div class="grid-4" style="margin-bottom:2rem;">
+      <div class="stat-card animate-in">
+        <div class="stat-icon purple">👥</div>
+        <div class="stat-info">
+          <div class="value">248</div>
+          <div class="label">Total Students</div>
+        </div>
+      </div>
+      <div class="stat-card animate-in" style="animation-delay:0.1s">
+        <div class="stat-icon green">✅</div>
+        <div class="stat-info">
+          <div class="value">87%</div>
+          <div class="label">Avg Attendance</div>
+        </div>
+      </div>
+      <div class="stat-card animate-in" style="animation-delay:0.2s">
+        <div class="stat-icon red">⚠️</div>
+        <div class="stat-info">
+          <div class="value">14</div>
+          <div class="label">At-Risk Students</div>
+        </div>
+      </div>
+      <div class="stat-card animate-in" style="animation-delay:0.3s">
+        <div class="stat-icon blue">📚</div>
+        <div class="stat-info">
+          <div class="value">4</div>
+          <div class="label">Active Classes</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHARTS ROW -->
+    <div class="grid-2" style="margin-bottom:2rem;">
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem; flex-wrap:wrap; gap:0.5rem;">
+          <h3>📊 Attendance Trends</h3>
+          <div class="tabs" style="margin:0;">
+            <button class="tab-btn active" onclick="switchTrend('weekly', this)">Week</button>
+            <button class="tab-btn" onclick="switchTrend('monthly', this)">Month</button>
+          </div>
+        </div>
+        <div class="chart-container" style="height:240px;">
+          <canvas id="trendChart"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <h3 style="margin-bottom:1.25rem;">🎯 Class Performance</h3>
+        <div class="chart-container" style="height:240px;">
+          <canvas id="classChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- FILTERS & TABLE -->
+    <div class="card">
+      <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem; margin-bottom:1.25rem;">
+        <h3>📋 Attendance Records</h3>
+        <div style="display:flex; gap:0.75rem; flex-wrap:wrap; align-items:center;">
+          <select id="classFilter" onchange="filterTable()" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:var(--text); padding:0.4rem 0.75rem; border-radius:8px; font-size:0.85rem; outline:none;">
+            <option value="all">All Classes</option>
+          </select>
+          <select id="statusFilter" onchange="filterTable()" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:var(--text); padding:0.4rem 0.75rem; border-radius:8px; font-size:0.85rem; outline:none;">
+            <option value="all">All Status</option>
+            <option value="Present">Present</option>
+            <option value="Absent">Absent</option>
+            <option value="Late">Late</option>
+          </select>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Student</th>
+              <th>Class</th>
+              <th>Date</th>
+              <th>Status</th>
+              <th>Points</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="reportTableBody"></tbody>
+        </table>
+      </div>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1rem; flex-wrap:wrap; gap:0.5rem;">
+        <span style="font-size:0.8rem; color:var(--text-muted);" id="tableCount">Showing 8 records</span>
+        <div style="display:flex; gap:0.5rem;">
+          <button class="btn btn-outline btn-sm">← Prev</button>
+          <button class="btn btn-outline btn-sm">Next →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- AT-RISK STUDENTS -->
+    <div class="card" style="margin-top:1.5rem;">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.25rem; flex-wrap:wrap; gap:0.5rem;">
+        <h3>⚠️ At-Risk Students <span class="badge badge-red">Below 75%</span></h3>
+        <button class="btn btn-primary btn-sm" onclick="sendReminders()">🔔 Notify All</button>
+      </div>
+      <div class="grid-2">
+        <div style="display:flex; align-items:center; gap:1rem; padding:0.85rem; background:rgba(255,101,132,0.05); border:1px solid rgba(255,101,132,0.15); border-radius:12px;">
+          <span style="font-size:1.5rem;">👨‍💻</span>
+          <div style="flex:1;">
+            <div style="font-weight:600; font-size:0.9rem;">Noah Williams</div>
+            <div style="font-size:0.75rem; color:var(--text-muted);">CS101 · 62% attendance</div>
+            <div class="progress-bar" style="margin-top:0.4rem; height:6px;"><div class="progress-fill" style="width:62%; background:var(--secondary);"></div></div>
+          </div>
+          <button class="btn btn-sm" style="background:rgba(255,101,132,0.15); color:var(--secondary); border:none; cursor:pointer;" onclick="showToast('📧','Reminder sent to Noah Williams!')">Notify</button>
+        </div>
+        <div style="display:flex; align-items:center; gap:1rem; padding:0.85rem; background:rgba(255,101,132,0.05); border:1px solid rgba(255,101,132,0.15); border-radius:12px;">
+          <span style="font-size:1.5rem;">👩‍💼</span>
+          <div style="flex:1;">
+            <div style="font-weight:600; font-size:0.9rem;">Emma Johnson</div>
+            <div style="font-size:0.75rem; color:var(--text-muted);">PHY301 · 68% attendance</div>
+            <div class="progress-bar" style="margin-top:0.4rem; height:6px;"><div class="progress-fill" style="width:68%; background:var(--secondary);"></div></div>
+          </div>
+          <button class="btn btn-sm" style="background:rgba(255,101,132,0.15); color:var(--secondary); border:none; cursor:pointer;" onclick="showToast('📧','Reminder sent to Emma Johnson!')">Notify</button>
+        </div>
+        <div style="display:flex; align-items:center; gap:1rem; padding:0.85rem; background:rgba(249,202,36,0.05); border:1px solid rgba(249,202,36,0.15); border-radius:12px;">
+          <span style="font-size:1.5rem;">👨‍🏫</span>
+          <div style="flex:1;">
+            <div style="font-weight:600; font-size:0.9rem;">Ethan Brown</div>
+            <div style="font-size:0.75rem; color:var(--text-muted);">MATH201 · 71% attendance</div>
+            <div class="progress-bar" style="margin-top:0.4rem; height:6px;"><div class="progress-fill yellow" style="width:71%;"></div></div>
+          </div>
+          <button class="btn btn-sm" style="background:rgba(249,202,36,0.15); color:var(--warning); border:none; cursor:pointer;" onclick="showToast('📧','Reminder sent to Ethan Brown!')">Notify</button>
+        </div>
+        <div style="display:flex; align-items:center; gap:1rem; padding:0.85rem; background:rgba(249,202,36,0.05); border:1px solid rgba(249,202,36,0.15); border-radius:12px;">
+          <span style="font-size:1.5rem;">👩‍🏫</span>
+          <div style="flex:1;">
+            <div style="font-weight:600; font-size:0.9rem);">Zara Ahmed</div>
+            <div style="font-size:0.75rem; color:var(--text-muted);">ENG101 · 73% attendance</div>
+            <div class="progress-bar" style="margin-top:0.4rem; height:6px;"><div class="progress-fill yellow" style="width:73%;"></div></div>
+          </div>
+          <button class="btn btn-sm" style="background:rgba(249,202,36,0.15); color:var(--warning); border:none; cursor:pointer;" onclick="showToast('📧','Reminder sent to Zara Ahmed!')">Notify</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  <p>© 2026 AttendTrack — <a href="index.html">Home</a> · <a href="about.html">About</a></p>
+</footer>
+
+<script src="js/app.js"></script>
+<script>
+Chart.defaults.color = 'rgba(224,224,224,0.7)';
+Chart.defaults.borderColor = 'rgba(255,255,255,0.08)';
+
+let trendChartInstance;
+
+function initPage() {
+  // Populate class filter from DB
+  const classes = DB.getClasses();
+  const sel = document.getElementById('classFilter');
+  sel.innerHTML = '<option value="all">All Classes</option>' +
+    classes.map(c => `<option value="${c.classId}">${c.classId}</option>`).join('');
+
+  renderTable(DB.getAttendance().map(r => {
+    const users = DB._get('users');
+    const s = users.find(u => u.id === r.studentId);
+    return { ...r, student: s?.name || 'Unknown', class: r.classId };
+  }));
+  buildTrendChart('weekly');
+
+  new Chart(document.getElementById('classChart'), {
+    type: 'doughnut',
+    data: {
+      labels: ['CS101', 'MATH201', 'PHY301', 'ENG101'],
+      datasets: [{
+        data: [92, 85, 78, 95],
+        backgroundColor: ['#6c63ff','#43e97b','#ff6584','#f9ca24'],
+        borderWidth: 0,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { boxWidth: 12, padding: 12 } }
+      }
+    }
+  });
+}
+
+function buildTrendChart(period) {
+  const ctx = document.getElementById('trendChart');
+  if (trendChartInstance) trendChartInstance.destroy();
+
+  const labels = period === 'weekly'
+    ? ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']
+    : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+
+  const data1 = period === 'weekly' ? [88, 92, 85, 90, 87] : [82, 85, 88, 86, 90, 87];
+  const data2 = period === 'weekly' ? [80, 85, 78, 82, 80] : [75, 78, 82, 80, 85, 83];
+
+  trendChartInstance = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'CS101',
+          data: data1,
+          borderColor: '#6c63ff',
+          backgroundColor: 'rgba(108,99,255,0.1)',
+          tension: 0.4,
+          fill: true,
+          pointBackgroundColor: '#6c63ff',
+        },
+        {
+          label: 'MATH201',
+          data: data2,
+          borderColor: '#43e97b',
+          backgroundColor: 'rgba(67,233,123,0.1)',
+          tension: 0.4,
+          fill: true,
+          pointBackgroundColor: '#43e97b',
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 12 } } },
+      scales: {
+        y: { min: 60, max: 100, grid: { color: 'rgba(255,255,255,0.05)' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+}
+
+function switchTrend(period, btn) {
+  document.querySelectorAll('.tabs .tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  buildTrendChart(period);
+}
+
+function renderTable(data) {
+  const tbody = document.getElementById('reportTableBody');
+  tbody.innerHTML = data.map(r => `
+    <tr>
+      <td>${r.student}</td>
+      <td><span class="badge badge-purple">${r.class}</span></td>
+      <td>${r.date}</td>
+      <td><span class="badge ${r.status === 'Present' ? 'badge-green' : r.status === 'Late' ? 'badge-yellow' : 'badge-red'}">
+        ${r.status === 'Present' ? '✅' : r.status === 'Late' ? '⏰' : '❌'} ${r.status}
+      </span></td>
+      <td style="color:var(--warning);">${r.points > 0 ? '+' + r.points : '—'}</td>
+      <td><button class="btn btn-sm" style="background:rgba(108,99,255,0.15); color:var(--primary); border:none; cursor:pointer;" onclick="showToast('📧','Reminder sent to ${r.student}!')">Notify</button></td>
+    </tr>
+  `).join('');
+  document.getElementById('tableCount').textContent = `Showing ${data.length} records`;
+}
+
+function filterTable() {
+  const cls = document.getElementById('classFilter').value;
+  const status = document.getElementById('statusFilter').value;
+  const users = DB._get('users');
+  const filtered = DB.getAttendance()
+    .filter(r => (cls === 'all' || r.classId === cls) && (status === 'all' || r.status === status))
+    .map(r => {
+      const s = users.find(u => u.id === r.studentId);
+      return { ...r, student: s?.name || 'Unknown', class: r.classId };
+    });
+  renderTable(filtered);
+}
+
+function exportCSV() {
+  const records = DB.getAttendance();
+  const users = DB._get('users');
+  const rows = [['Student','Class','Date','Status','Points'],
+    ...records.map(r => {
+      const s = users.find(u => u.id === r.studentId);
+      return [s?.name || 'Unknown', r.classId, r.date, r.status, r.points];
+    })];
+  const csv = rows.map(r => r.join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'attendance_report.csv';
+  a.click();
+  showToast('✅', 'CSV exported successfully!');
+}
+
+function exportPDF() {
+  showToast('📄', 'PDF export would open print dialog in production.');
+  window.print();
+}
+
+function sendReminders() {
+  showToast('🔔', 'Reminders sent to all at-risk students!');
+}
+</script>
+</body>
+</html>

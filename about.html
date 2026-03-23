@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About — AttendTrack</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <script src="js/db.js"></script>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="index.html" class="nav-brand"><span class="logo-icon">🎓</span> AttendTrack</a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="checkin.html">Check-in</a>
+    <a href="leaderboard.html">Leaderboard</a>
+    <a href="reports.html">Reports</a>
+    <a href="about.html" class="active">About</a>
+  </div>
+  <div class="nav-toggle"><span></span><span></span><span></span></div>
+</nav>
+
+<div class="page-header">
+  <div class="container">
+    <h1>ℹ️ About AttendTrack</h1>
+    <p>Learn how the system works and why it makes attendance actually worth showing up for.</p>
+  </div>
+</div>
+
+<div class="section" style="padding-top:2.5rem;">
+  <div class="container">
+
+    <!-- MISSION -->
+    <div style="text-align:center; max-width:700px; margin:0 auto 4rem;">
+      <div style="font-size:3rem; margin-bottom:1rem;">🎓</div>
+      <h2 style="font-size:1.8rem; font-weight:700; margin-bottom:1rem;">
+        Attendance shouldn't feel like a chore.
+      </h2>
+      <p style="color:var(--text-muted); font-size:1rem; line-height:1.8;">
+        AttendTrack turns the daily routine of showing up into a rewarding experience. By combining gamification with smart verification, we help students build better habits while giving teachers the data they actually need.
+      </p>
+    </div>
+
+    <!-- HOW IT WORKS TIMELINE -->
+    <div class="grid-2" style="margin-bottom:4rem; gap:3rem;">
+      <div>
+        <h2 style="font-size:1.4rem; font-weight:700; margin-bottom:2rem;">How It Works</h2>
+        <div class="timeline">
+          <div class="timeline-item">
+            <h3>🔑 Teacher Creates a Session</h3>
+            <p>The teacher generates a unique class code for each session. The code is time-limited to prevent sharing.</p>
+          </div>
+          <div class="timeline-item">
+            <h3>📱 Student Enters the Code</h3>
+            <p>Students open AttendTrack on any device and enter the session code to begin the check-in process.</p>
+          </div>
+          <div class="timeline-item">
+            <h3>🧠 Quick Verification Quiz</h3>
+            <p>A simple question from the lesson confirms the student is actually present and paying attention.</p>
+          </div>
+          <div class="timeline-item">
+            <h3>⭐ Points & Badges Awarded</h3>
+            <p>Attendance is marked instantly. Points are added, streaks are updated, and badges are unlocked automatically.</p>
+          </div>
+          <div class="timeline-item">
+            <h3>📊 Analytics Updated</h3>
+            <p>Teacher dashboards and student profiles update in real time with the latest attendance data.</p>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h2 style="font-size:1.4rem; font-weight:700; margin-bottom:1.5rem;">Benefits</h2>
+        <div style="display:flex; flex-direction:column; gap:1rem; margin-bottom:2rem;">
+          <div class="card" style="display:flex; gap:1rem; align-items:flex-start;">
+            <span style="font-size:1.5rem; flex-shrink:0;">🎮</span>
+            <div>
+              <h4 style="margin-bottom:0.25rem;">For Students</h4>
+              <p style="font-size:0.85rem; color:var(--text-muted);">Earn points and badges for consistent attendance. Compete on leaderboards, track your own progress, and stay motivated with streak rewards.</p>
+            </div>
+          </div>
+          <div class="card" style="display:flex; gap:1rem; align-items:flex-start;">
+            <span style="font-size:1.5rem; flex-shrink:0;">📋</span>
+            <div>
+              <h4 style="margin-bottom:0.25rem;">For Teachers</h4>
+              <p style="font-size:0.85rem; color:var(--text-muted);">Get accurate, fraud-resistant attendance data. Export reports, identify at-risk students early, and send automated reminders with one click.</p>
+            </div>
+          </div>
+          <div class="card" style="display:flex; gap:1rem; align-items:flex-start;">
+            <span style="font-size:1.5rem; flex-shrink:0;">🏫</span>
+            <div>
+              <h4 style="margin-bottom:0.25rem;">For Institutions</h4>
+              <p style="font-size:0.85rem; color:var(--text-muted);">Reduce proxy attendance, improve overall attendance rates, and gain class-wide analytics to support student success initiatives.</p>
+            </div>
+          </div>
+        </div>
+
+        <h2 style="font-size:1.4rem; font-weight:700; margin-bottom:1.25rem;">Points System</h2>
+        <div class="card">
+          <div style="display:flex; flex-direction:column; gap:0.75rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center; padding-bottom:0.75rem; border-bottom:1px solid rgba(255,255,255,0.06);">
+              <span style="font-size:0.9rem;">✅ On-time check-in</span>
+              <span style="color:var(--warning); font-weight:700;">+50 pts</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; padding-bottom:0.75rem; border-bottom:1px solid rgba(255,255,255,0.06);">
+              <span style="font-size:0.9rem;">⏰ Late check-in</span>
+              <span style="color:var(--warning); font-weight:700;">+25 pts</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; padding-bottom:0.75rem; border-bottom:1px solid rgba(255,255,255,0.06);">
+              <span style="font-size:0.9rem;">🎯 Correct quiz answer</span>
+              <span style="color:var(--warning); font-weight:700;">+10 pts</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; padding-bottom:0.75rem; border-bottom:1px solid rgba(255,255,255,0.06);">
+              <span style="font-size:0.9rem;">🔥 7-day streak bonus</span>
+              <span style="color:var(--accent); font-weight:700;">2× multiplier</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-size:0.9rem;">🏆 30-day streak bonus</span>
+              <span style="color:var(--accent); font-weight:700;">3× multiplier</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BADGES GUIDE -->
+    <div style="margin-bottom:4rem;">
+      <h2 style="font-size:1.4rem; font-weight:700; margin-bottom:1.5rem; text-align:center;">🏅 Badge Guide</h2>
+      <div class="grid-4">
+        <div class="card" style="text-align:center; padding:1.5rem;">
+          <div style="font-size:2.5rem; margin-bottom:0.5rem;">⭐</div>
+          <h4 style="margin-bottom:0.25rem;">Rising Star</h4>
+          <p style="font-size:0.8rem; color:var(--text-muted);">First 5 check-ins completed</p>
+        </div>
+        <div class="card" style="text-align:center; padding:1.5rem;">
+          <div style="font-size:2.5rem; margin-bottom:0.5rem;">🔥</div>
+          <h4 style="margin-bottom:0.25rem;">On Fire</h4>
+          <p style="font-size:0.8rem; color:var(--text-muted);">7-day attendance streak</p>
+        </div>
+        <div class="card" style="text-align:center; padding:1.5rem;">
+          <div style="font-size:2.5rem; margin-bottom:0.5rem;">⚡</div>
+          <h4 style="margin-bottom:0.25rem;">Speed Star</h4>
+          <p style="font-size:0.8rem; color:var(--text-muted);">Check in within 2 min of class start</p>
+        </div>
+        <div class="card" style="text-align:center; padding:1.5rem;">
+          <div style="font-size:2.5rem; margin-bottom:0.5rem;">🎯</div>
+          <h4 style="margin-bottom:0.25rem;">Bullseye</h4>
+          <p style="font-size:0.8rem; color:var(--text-muted);">10 correct quiz answers in a row</p>
+        </div>
+        <div class="card" style="text-align:center; padding:1.5rem;">
+          <div style="font-size:2.5rem; margin-bottom:0.5rem;">💡</div>
+          <h4 style="margin-bottom:0.25rem;">Bright Mind</h4>
+          <p style="font-size:0.8rem; color:var(--text-muted);">100% attendance for a full month</p>
+        </div>
+        <div class="card" style="text-align:center; padding:1.5rem;">
+          <div style="font-size:2.5rem; margin-bottom:0.5rem;">🏆</div>
+          <h4 style="margin-bottom:0.25rem;">Champion</h4>
+          <p style="font-size:0.8rem; color:var(--text-muted);">Reach #1 on the leaderboard</p>
+        </div>
+        <div class="card" style="text-align:center; padding:1.5rem;">
+          <div style="font-size:2.5rem; margin-bottom:0.5rem;">💎</div>
+          <h4 style="margin-bottom:0.25rem;">Diamond</h4>
+          <p style="font-size:0.8rem; color:var(--text-muted);">Earn 5,000+ total points</p>
+        </div>
+        <div class="card" style="text-align:center; padding:1.5rem;">
+          <div style="font-size:2.5rem; margin-bottom:0.5rem;">👑</div>
+          <h4 style="margin-bottom:0.25rem;">Crown</h4>
+          <p style="font-size:0.8rem; color:var(--text-muted);">30-day perfect attendance streak</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTACT / FEEDBACK -->
+    <div class="grid-2" style="gap:2rem;">
+      <div>
+        <h2 style="font-size:1.4rem; font-weight:700; margin-bottom:1.5rem;">📬 Contact Us</h2>
+        <div class="card" style="display:flex; flex-direction:column; gap:1rem;">
+          <div style="display:flex; align-items:center; gap:0.75rem;">
+            <span style="font-size:1.25rem;">📧</span>
+            <div>
+              <div style="font-size:0.8rem; color:var(--text-muted);">Email</div>
+              <div style="font-size:0.9rem;">support@attendtrack.edu</div>
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:0.75rem;">
+            <span style="font-size:1.25rem;">🌐</span>
+            <div>
+              <div style="font-size:0.8rem; color:var(--text-muted);">Website</div>
+              <div style="font-size:0.9rem;">www.attendtrack.edu</div>
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:0.75rem;">
+            <span style="font-size:1.25rem;">📞</span>
+            <div>
+              <div style="font-size:0.8rem; color:var(--text-muted);">Support Hours</div>
+              <div style="font-size:0.9rem;">Mon–Fri, 9am–5pm</div>
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:0.75rem;">
+            <span style="font-size:1.25rem;">🐛</span>
+            <div>
+              <div style="font-size:0.8rem; color:var(--text-muted);">Bug Reports</div>
+              <div style="font-size:0.9rem;">bugs@attendtrack.edu</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h2 style="font-size:1.4rem; font-weight:700; margin-bottom:1.5rem;">💬 Send Feedback</h2>
+        <div class="card">
+          <div class="form-group">
+            <label>Your Name</label>
+            <input type="text" placeholder="e.g. Aisha Patel" />
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" placeholder="your@email.com" />
+          </div>
+          <div class="form-group">
+            <label>Role</label>
+            <select>
+              <option>Student</option>
+              <option>Teacher</option>
+              <option>Administrator</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Message</label>
+            <textarea placeholder="Share your thoughts, suggestions, or report an issue..."></textarea>
+          </div>
+          <button class="btn btn-primary" style="width:100%;" onclick="submitFeedback()">Send Feedback 🚀</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  <p>© 2026 AttendTrack — Digital Attendance & Productivity Tracker &nbsp;|&nbsp; <a href="index.html">Home</a> &nbsp;|&nbsp; <a href="reports.html">Reports</a></p>
+</footer>
+
+<script src="js/app.js"></script>
+<script>
+function submitFeedback() {
+  showToast('✅', 'Thanks for your feedback! We\'ll get back to you soon.');
+}
+function initPage() {}
+</script>
+</body>
+</html>

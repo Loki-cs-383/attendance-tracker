@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Panel — AttendTrack</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    .admin-tab-content { display: none; }
+    .admin-tab-content.active { display: block; animation: fadeInUp 0.3s ease; }
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.75);
+      display: none; align-items: center; justify-content: center;
+      z-index: 2000; padding: 1rem;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-box {
+      background: var(--card); border: 1px solid rgba(108,99,255,0.25);
+      border-radius: 20px; padding: 2rem; width: 100%; max-width: 520px;
+      max-height: 90vh; overflow-y: auto; animation: fadeInUp 0.3s ease;
+    }
+    .modal-box h3 { margin-bottom: 1.25rem; font-size: 1.1rem; }
+    .class-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(108,99,255,0.12);
+      border-radius: 14px; padding: 1.25rem;
+      transition: var(--transition);
+    }
+    .class-card:hover { border-color: rgba(108,99,255,0.3); }
+    .class-card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 0.75rem; }
+    .class-id-badge {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      background: rgba(108,99,255,0.18); color: var(--primary);
+      padding: 0.25rem 0.75rem; border-radius: 50px; font-size: 0.8rem; font-weight: 700;
+    }
+    .class-meta { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem; }
+    .class-meta span { font-size: 0.78rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.3rem; }
+    .checkbox-list { display: flex; flex-direction: column; gap: 0.5rem; max-height: 160px; overflow-y: auto; padding: 0.25rem; }
+    .checkbox-item { display: flex; align-items: center; gap: 0.6rem; padding: 0.4rem 0.5rem; border-radius: 8px; cursor: pointer; transition: var(--transition); }
+    .checkbox-item:hover { background: rgba(108,99,255,0.08); }
+    .checkbox-item input { accent-color: var(--primary); width: 15px; height: 15px; cursor: pointer; }
+    .section-label { font-size: 0.72rem; color: var(--primary); font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem; }
+    .pwd-reveal { position: relative; }
+    .pwd-reveal input { padding-right: 3rem; }
+    .pwd-reveal button { position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1rem; }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="index.html" class="nav-brand"><span class="logo-icon">🎓</span> AttendTrack</a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="checkin.html">Check-in</a>
+    <a href="leaderboard.html">Leaderboard</a>
+    <a href="reports.html">Reports</a>
+    <a href="admin.html" class="active">Admin</a>
+    <a href="about.html">About</a>
+  </div>
+  <div class="nav-toggle"><span></span><span></span><span></span></div>
+</nav>
+
+<div class="page-header">
+  <div class="container">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+      <div>
+        <h1 id="adminWelcome">🛡️ Admin Panel</h1>
+        <p>Manage users, classes, sessions, and system-wide settings.</p>
+      </div>
+      <div style="display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap;">
+        <span class="badge badge-purple">🛡️ Admin</span>
+        <button class="btn btn-outline btn-sm" onclick="doLogout()">🚪 Logout</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="padding-top:2rem;">
+  <div class="container">
+
+    <!-- STATS -->
+    <div class="grid-4" style="margin-bottom:2rem;">
+      <div class="stat-card animate-in">
+        <div class="stat-icon purple">👥</div>
+        <div class="stat-info"><div class="value" id="totalUsers">—</div><div class="label">Total Users</div></div>
+      </div>
+      <div class="stat-card animate-in" style="animation-delay:.1s">
+        <div class="stat-icon green">🎒</div>
+        <div class="stat-info"><div class="value" id="totalStudents">—</div><div class="label">Students</div></div>
+      </div>
+      <div class="stat-card animate-in" style="animation-delay:.2s">
+        <div class="stat-icon yellow">👩‍🏫</div>
+        <div class="stat-info"><div class="value" id="totalTeachers">—</div><div class="label">Teachers</div></div>
+      </div>
+      <div class="stat-card animate-in" style="animation-delay:.3s">
+        <div class="stat-icon blue">📚</div>
+        <div class="stat-info"><div class="value" id="totalClasses">—</div><div class="label">Classes</div></div>
+      </div>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs" id="adminTabs" style="margin-bottom:1.5rem;flex-wrap:wrap;">
+      <button class="tab-btn active" onclick="switchTab('users',this)">👥 Users</button>
+      <button class="tab-btn" onclick="switchTab('classes',this)">📚 Classes</button>
+      <button class="tab-btn" onclick="switchTab('sessions',this)">🗓️ Sessions</button>
+      <button class="tab-btn" onclick="switchTab('attendance',this)">✅ Attendance</button>
+      <button class="tab-btn" onclick="switchTab('analytics',this)">📊 Analytics</button>
+    </div>
+
+    <!-- ── TAB: USERS ── -->
+    <div class="admin-tab-content active" id="tab-users">
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:1.25rem;">
+          <h3>All Users</h3>
+          <div style="display:flex;gap:0.75rem;flex-wrap:wrap;align-items:center;">
+            <select id="roleFilter" onchange="renderUsers()" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:var(--text);padding:0.4rem 0.75rem;border-radius:8px;font-size:0.85rem;outline:none;">
+              <option value="all">All Roles</option>
+              <option value="student">Students</option>
+              <option value="teacher">Teachers</option>
+              <option value="admin">Admins</option>
+            </select>
+            <button class="btn btn-primary btn-sm" onclick="openAddTeacher()">👩‍🏫 Add Teacher</button>
+            <button class="btn btn-outline btn-sm" onclick="openAddUser()">+ Add User</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>User</th><th>Email</th><th>Role</th><th>Classes</th><th>Points</th><th>Joined</th><th>Actions</th></tr></thead>
+            <tbody id="usersTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TAB: CLASSES ── -->
+    <div class="admin-tab-content" id="tab-classes">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:1.25rem;">
+        <div>
+          <h3 style="font-size:1rem;margin-bottom:0.2rem;">All Classes</h3>
+          <p style="font-size:0.85rem;color:var(--text-muted);">Create and manage classes, assign teachers, and enroll students.</p>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="openAddClass()">+ New Class</button>
+      </div>
+      <div class="grid-2" id="classesGrid"></div>
+    </div>
+
+    <!-- ── TAB: SESSIONS ── -->
+    <div class="admin-tab-content" id="tab-sessions">
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:1.25rem;">
+          <h3>Class Sessions & Codes</h3>
+          <button class="btn btn-primary btn-sm" onclick="openAddSession()">+ New Session</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Class</th><th>Code</th><th>Teacher</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="sessionsTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TAB: ATTENDANCE ── -->
+    <div class="admin-tab-content" id="tab-attendance">
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:1.25rem;">
+          <h3>All Attendance Records</h3>
+          <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+            <button class="btn btn-outline btn-sm" onclick="exportCSV()">⬇️ Export CSV</button>
+            <button class="btn btn-primary btn-sm" onclick="showToast('🔔','Reminders sent to all at-risk students!')">🔔 Notify At-Risk</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Student</th><th>Class</th><th>Date</th><th>Status</th><th>Points</th><th>Quiz</th></tr></thead>
+            <tbody id="attendanceTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TAB: ANALYTICS ── -->
+    <div class="admin-tab-content" id="tab-analytics">
+      <div class="grid-2" style="margin-bottom:1.5rem;">
+        <div class="card">
+          <h3 style="margin-bottom:1.25rem;">📊 Attendance by Class</h3>
+          <div class="chart-container" style="height:240px;"><canvas id="classBarChart"></canvas></div>
+        </div>
+        <div class="card">
+          <h3 style="margin-bottom:1.25rem;">📈 Weekly Trend</h3>
+          <div class="chart-container" style="height:240px;"><canvas id="weeklyChart"></canvas></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3 style="margin-bottom:1.25rem;">🏆 Top Students by Points</h3>
+        <div id="topStudentsList"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════ MODAL: ADD TEACHER ══════════ -->
+<div class="modal-overlay" id="addTeacherModal">
+  <div class="modal-box">
+    <h3>👩‍🏫 Create Teacher Account</h3>
+    <div class="section-label">Account Details</div>
+    <div class="form-group">
+      <label>Full Name</label>
+      <input type="text" id="tName" placeholder="e.g. Prof. Jane Smith" />
+    </div>
+    <div class="form-group">
+      <label>Email Address</label>
+      <input type="email" id="tEmail" placeholder="jane@school.edu" />
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <div class="pwd-reveal">
+        <input type="password" id="tPassword" placeholder="Min. 6 characters" />
+        <button onclick="toggleField('tPassword',this)">👁️</button>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Avatar</label>
+      <select id="tAvatar" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:var(--text);padding:0.6rem 0.75rem;border-radius:10px;width:100%;outline:none;font-size:1rem;">
+        <option value="👩‍🏫">👩‍🏫 Female Teacher</option>
+        <option value="👨‍🏫">👨‍🏫 Male Teacher</option>
+        <option value="👩‍🔬">👩‍🔬 Female Scientist</option>
+        <option value="👨‍🔬">👨‍🔬 Male Scientist</option>
+        <option value="👩‍💼">👩‍💼 Female Professional</option>
+        <option value="👨‍💼">👨‍💼 Male Professional</option>
+        <option value="🧑‍🏫">🧑‍🏫 Teacher</option>
+      </select>
+    </div>
+    <div class="form-group" style="margin-bottom:1.5rem;">
+      <div class="section-label" style="margin-bottom:0.6rem;">Assign Classes (optional)</div>
+      <div class="checkbox-list" id="teacherClassList"></div>
+    </div>
+    <div style="display:flex;gap:0.75rem;">
+      <button class="btn btn-primary" style="flex:1;justify-content:center;" onclick="saveTeacher()">Create Account</button>
+      <button class="btn btn-outline" onclick="closeModal('addTeacherModal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ MODAL: ADD USER (generic) ══════════ -->
+<div class="modal-overlay" id="addUserModal">
+  <div class="modal-box">
+    <h3>➕ Add New User</h3>
+    <div class="form-group">
+      <label>Full Name</label>
+      <input type="text" id="newName" placeholder="e.g. Jane Doe" />
+    </div>
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" id="newEmail" placeholder="jane@school.edu" />
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="newPassword" placeholder="••••••••" />
+    </div>
+    <div class="form-group">
+      <label>Role</label>
+      <select id="newRole" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:var(--text);padding:0.6rem 0.75rem;border-radius:10px;width:100%;outline:none;">
+        <option value="student">Student</option>
+        <option value="teacher">Teacher</option>
+        <option value="admin">Admin</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:0.75rem;margin-top:1.5rem;">
+      <button class="btn btn-primary" style="flex:1;justify-content:center;" onclick="saveNewUser()">Save User</button>
+      <button class="btn btn-outline" onclick="closeModal('addUserModal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ MODAL: ADD CLASS ══════════ -->
+<div class="modal-overlay" id="addClassModal">
+  <div class="modal-box">
+    <h3 id="classModalTitle">📚 Create New Class</h3>
+    <div class="form-group">
+      <label>Class ID <span style="color:var(--text-muted);font-size:0.78rem;">(unique code, e.g. BIO401)</span></label>
+      <input type="text" id="cClassId" placeholder="e.g. BIO401" style="text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()" />
+    </div>
+    <div class="form-group">
+      <label>Class Name</label>
+      <input type="text" id="cName" placeholder="e.g. Biology" />
+    </div>
+    <div class="form-group">
+      <label>Subject</label>
+      <input type="text" id="cSubject" placeholder="e.g. Science" />
+    </div>
+    <div class="form-group">
+      <label>Schedule</label>
+      <input type="text" id="cSchedule" placeholder="e.g. Mon/Wed 10:00am" />
+    </div>
+    <div class="form-group">
+      <label>Room</label>
+      <input type="text" id="cRoom" placeholder="e.g. Room 301" />
+    </div>
+    <div class="form-group">
+      <label>Assign Teacher</label>
+      <select id="cTeacher" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:var(--text);padding:0.6rem 0.75rem;border-radius:10px;width:100%;outline:none;">
+        <option value="">— No teacher yet —</option>
+      </select>
+    </div>
+    <div class="form-group" style="margin-bottom:1.5rem;">
+      <div class="section-label" style="margin-bottom:0.6rem;">Enroll Students (optional)</div>
+      <div class="checkbox-list" id="classStudentList"></div>
+    </div>
+    <div style="display:flex;gap:0.75rem;">
+      <button class="btn btn-primary" style="flex:1;justify-content:center;" id="saveClassBtn" onclick="saveClass()">Create Class</button>
+      <button class="btn btn-outline" onclick="closeModal('addClassModal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ MODAL: ADD SESSION ══════════ -->
+<div class="modal-overlay" id="addSessionModal">
+  <div class="modal-box">
+    <h3>🗓️ Create New Session</h3>
+    <div class="form-group">
+      <label>Class</label>
+      <select id="newClassId" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:var(--text);padding:0.6rem 0.75rem;border-radius:10px;width:100%;outline:none;"></select>
+    </div>
+    <div class="form-group">
+      <label>Session Code <span style="color:var(--text-muted);font-size:0.78rem;">(students enter this)</span></label>
+      <div style="display:flex;gap:0.5rem;">
+        <input type="text" id="newCode" placeholder="e.g. CS101-ABC" style="text-transform:uppercase;flex:1;" oninput="this.value=this.value.toUpperCase()" />
+        <button class="btn btn-outline btn-sm" onclick="generateCode()" style="white-space:nowrap;">🎲 Generate</button>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Quiz Question</label>
+      <input type="text" id="newQuizQ" placeholder="e.g. What is the derivative of x²?" />
+    </div>
+    <div class="form-group">
+      <div class="section-label" style="margin-bottom:0.6rem;">Answer Options</div>
+      <div style="display:flex;flex-direction:column;gap:0.5rem;" id="quizOptionsWrap">
+        <input type="text" class="quiz-opt-input" placeholder="Option A" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:var(--text);padding:0.6rem 0.75rem;border-radius:8px;outline:none;" />
+        <input type="text" class="quiz-opt-input" placeholder="Option B" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:var(--text);padding:0.6rem 0.75rem;border-radius:8px;outline:none;" />
+        <input type="text" class="quiz-opt-input" placeholder="Option C" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:var(--text);padding:0.6rem 0.75rem;border-radius:8px;outline:none;" />
+        <input type="text" class="quiz-opt-input" placeholder="Option D" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:var(--text);padding:0.6rem 0.75rem;border-radius:8px;outline:none;" />
+      </div>
+    </div>
+    <div class="form-group" style="margin-bottom:1.5rem;">
+      <label>Correct Answer</label>
+      <select id="newQuizAnswer" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:var(--text);padding:0.6rem 0.75rem;border-radius:10px;width:100%;outline:none;">
+        <option value="0">Option A</option>
+        <option value="1">Option B</option>
+        <option value="2">Option C</option>
+        <option value="3">Option D</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:0.75rem;">
+      <button class="btn btn-primary" style="flex:1;justify-content:center;" onclick="saveNewSession()">Create Session</button>
+      <button class="btn btn-outline" onclick="closeModal('addSessionModal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <p>© 2026 AttendTrack — <a href="index.html">Home</a> · <a href="about.html">About</a></p>
+</footer>
+
+<script src="js/db.js"></script>
+<script src="js/app.js"></script>
+<script>
+Chart.defaults.color = 'rgba(224,224,224,0.7)';
+Chart.defaults.borderColor = 'rgba(255,255,255,0.08)';
+
+let editingClassId = null; // null = create, number = edit
+
+// ── INIT ──────────────────────────────────────────────────
+function initPage() {
+  const user = DB.currentUser();
+  if (!user || user.role !== 'admin') { window.location.href = 'login.html'; return; }
+  document.getElementById('adminWelcome').textContent = '🛡️ Admin Panel — ' + user.name;
+  loadStats();
+  renderUsers();
+  renderClasses();
+  renderSessions();
+  renderAttendance();
+}
+
+// ── STATS ─────────────────────────────────────────────────
+function loadStats() {
+  const users = DB._get('users');
+  document.getElementById('totalUsers').textContent    = users.length;
+  document.getElementById('totalStudents').textContent = users.filter(u => u.role === 'student').length;
+  document.getElementById('totalTeachers').textContent = users.filter(u => u.role === 'teacher').length;
+  document.getElementById('totalClasses').textContent  = DB.getClasses().length;
+}
+
+// ── TABS ──────────────────────────────────────────────────
+function switchTab(name, btn) {
+  document.querySelectorAll('#adminTabs .tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.admin-tab-content').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  if (name === 'analytics') buildAnalyticsCharts();
+}
+
+// ── USERS ─────────────────────────────────────────────────
+function renderUsers() {
+  const filter = document.getElementById('roleFilter').value;
+  const users  = DB._get('users').filter(u => filter === 'all' || u.role === filter);
+  const classes = DB.getClasses();
+  const roleBadge = { student: 'badge-green', teacher: 'badge-purple', admin: 'badge-red' };
+
+  document.getElementById('usersTableBody').innerHTML = users.map(u => {
+    const userClasses = classes.filter(c => c.teacherId === u.id || (u.classes || []).includes(c.classId));
+    const classTags = userClasses.map(c => `<span class="badge badge-purple" style="font-size:0.7rem;">${c.classId}</span>`).join(' ');
+    return `
+      <tr>
+        <td>${u.avatar} ${u.name}</td>
+        <td style="color:var(--text-muted);font-size:0.85rem;">${u.email}</td>
+        <td><span class="badge ${roleBadge[u.role] || 'badge-purple'}">${u.role}</span></td>
+        <td>${classTags || '<span style="color:var(--text-muted);font-size:0.8rem;">—</span>'}</td>
+        <td style="color:var(--warning);">${u.points ? u.points.toLocaleString() : '—'}</td>
+        <td style="color:var(--text-muted);font-size:0.85rem;">${u.createdAt}</td>
+        <td>
+          <button class="btn btn-sm" style="background:rgba(255,101,132,0.15);color:var(--secondary);border:none;cursor:pointer;" onclick="deleteUser(${u.id})">🗑️</button>
+        </td>
+      </tr>`;
+  }).join('');
+}
+
+function deleteUser(id) {
+  if (!confirm('Delete this user? This cannot be undone.')) return;
+  DB._set('users', DB._get('users').filter(u => u.id !== id));
+  loadStats(); renderUsers();
+  showToast('🗑️', 'User deleted.');
+}
+
+// ── ADD TEACHER MODAL ─────────────────────────────────────
+function openAddTeacher() {
+  // Populate class checkboxes
+  const classes = DB.getClasses();
+  document.getElementById('teacherClassList').innerHTML = classes.length
+    ? classes.map(c => `
+        <label class="checkbox-item">
+          <input type="checkbox" value="${c.classId}" />
+          <span>${c.classId} — ${c.name}</span>
+        </label>`).join('')
+    : '<p style="font-size:0.85rem;color:var(--text-muted);">No classes yet. Create classes first.</p>';
+  // Clear fields
+  ['tName','tEmail','tPassword'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('addTeacherModal').classList.add('open');
+}
+
+function saveTeacher() {
+  const name     = document.getElementById('tName').value.trim();
+  const email    = document.getElementById('tEmail').value.trim();
+  const password = document.getElementById('tPassword').value;
+  const avatar   = document.getElementById('tAvatar').value;
+
+  if (!name || !email || !password) { showToast('❌', 'Please fill all required fields.'); return; }
+  if (password.length < 6)          { showToast('❌', 'Password must be at least 6 characters.'); return; }
+  if (!email.includes('@'))         { showToast('❌', 'Please enter a valid email.'); return; }
+
+  const users = DB._get('users');
+  if (users.find(u => u.email === email)) { showToast('❌', 'Email already exists.'); return; }
+
+  // Collect assigned classes
+  const assignedClasses = [...document.querySelectorAll('#teacherClassList input:checked')].map(i => i.value);
+
+  const newTeacher = {
+    id: DB._nextId('users'),
+    name, email, password, avatar,
+    role: 'teacher',
+    classes: assignedClasses,
+    points: 0, streak: 0,
+    createdAt: new Date().toISOString().split('T')[0],
+  };
+  users.push(newTeacher);
+  DB._set('users', users);
+
+  // Update each assigned class's teacherId
+  assignedClasses.forEach(cid => {
+    const classes = DB.getClasses();
+    const idx = classes.findIndex(c => c.classId === cid);
+    if (idx !== -1) { classes[idx].teacherId = newTeacher.id; DB._set('classes', classes); }
+  });
+
+  DB.addNotification(newTeacher.id, `Welcome to AttendTrack, ${name.split(' ')[0]}! Your teacher account is ready. 🎓`);
+  closeModal('addTeacherModal');
+  loadStats(); renderUsers(); renderClasses(); renderSessions();
+  showToast('✅', `Teacher account created for ${name}!`);
+}
+
+// ── ADD USER (generic) ────────────────────────────────────
+function openAddUser() {
+  ['newName','newEmail','newPassword'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('addUserModal').classList.add('open');
+}
+
+function saveNewUser() {
+  const name     = document.getElementById('newName').value.trim();
+  const email    = document.getElementById('newEmail').value.trim();
+  const password = document.getElementById('newPassword').value;
+  const role     = document.getElementById('newRole').value;
+  if (!name || !email || !password) { showToast('❌', 'Please fill all fields.'); return; }
+  const users = DB._get('users');
+  if (users.find(u => u.email === email)) { showToast('❌', 'Email already exists.'); return; }
+  const avatarMap = { student: '🎒', teacher: '👩‍🏫', admin: '🛡️' };
+  users.push({ id: DB._nextId('users'), name, email, password, role, avatar: avatarMap[role], points: 0, streak: 0, classes: [], createdAt: new Date().toISOString().split('T')[0] });
+  DB._set('users', users);
+  closeModal('addUserModal');
+  loadStats(); renderUsers();
+  showToast('✅', name + ' added successfully!');
+}
+
+// ── CLASSES ───────────────────────────────────────────────
+function renderClasses() {
+  const classes  = DB.getClasses();
+  const users    = DB._get('users');
+  const grid     = document.getElementById('classesGrid');
+
+  if (!classes.length) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--text-muted);">
+      <div style="font-size:3rem;margin-bottom:1rem;">📚</div>
+      <p>No classes yet. Click "+ New Class" to create one.</p>
+    </div>`;
+    return;
+  }
+
+  grid.innerHTML = classes.map(c => {
+    const teacher  = users.find(u => u.id === c.teacherId);
+    const enrolled = c.students ? c.students.length : 0;
+    const stats    = DB.getClassStats(c.classId);
+    return `
+      <div class="class-card">
+        <div class="class-card-header">
+          <div>
+            <span class="class-id-badge">📚 ${c.classId}</span>
+            <div style="font-size:1rem;font-weight:700;margin-top:0.5rem;">${c.name}</div>
+            <div style="font-size:0.8rem;color:var(--text-muted);">${c.subject}</div>
+          </div>
+          <div style="display:flex;gap:0.4rem;">
+            <button class="btn btn-sm" style="background:rgba(108,99,255,0.15);color:var(--primary);border:none;cursor:pointer;" onclick="openEditClass(${c.id})">✏️</button>
+            <button class="btn btn-sm" style="background:rgba(255,101,132,0.15);color:var(--secondary);border:none;cursor:pointer;" onclick="deleteClass(${c.id})">🗑️</button>
+          </div>
+        </div>
+        <div class="class-meta">
+          <span>👩‍🏫 ${teacher ? teacher.name : '<em>Unassigned</em>'}</span>
+          <span>🕐 ${c.schedule || '—'}</span>
+          <span>🚪 ${c.room || '—'}</span>
+          <span>🎒 ${enrolled} students</span>
+        </div>
+        <div style="margin-top:0.85rem;">
+          <div class="progress-label" style="font-size:0.75rem;"><span>Attendance Rate</span><span>${stats.rate}%</span></div>
+          <div class="progress-bar" style="height:6px;"><div class="progress-fill" style="width:${stats.rate}%"></div></div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function openAddClass() {
+  editingClassId = null;
+  document.getElementById('classModalTitle').textContent = '📚 Create New Class';
+  document.getElementById('saveClassBtn').textContent = 'Create Class';
+  ['cClassId','cName','cSubject','cSchedule','cRoom'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('cClassId').readOnly = false;
+  populateClassModalDropdowns(null);
+  document.getElementById('addClassModal').classList.add('open');
+}
+
+function openEditClass(id) {
+  const cls = DB.getClassById(id);
+  if (!cls) return;
+  editingClassId = id;
+  document.getElementById('classModalTitle').textContent = '✏️ Edit Class';
+  document.getElementById('saveClassBtn').textContent = 'Save Changes';
+  document.getElementById('cClassId').value   = cls.classId;
+  document.getElementById('cClassId').readOnly = true;
+  document.getElementById('cName').value      = cls.name;
+  document.getElementById('cSubject').value   = cls.subject || '';
+  document.getElementById('cSchedule').value  = cls.schedule || '';
+  document.getElementById('cRoom').value      = cls.room || '';
+  populateClassModalDropdowns(cls);
+  document.getElementById('addClassModal').classList.add('open');
+}
+
+function populateClassModalDropdowns(cls) {
+  // Teacher dropdown
+  const teachers = DB.getTeachers();
+  const tSel = document.getElementById('cTeacher');
+  tSel.innerHTML = '<option value="">— No teacher yet —</option>' +
+    teachers.map(t => `<option value="${t.id}" ${cls && cls.teacherId === t.id ? 'selected' : ''}>${t.avatar} ${t.name}</option>`).join('');
+
+  // Student checkboxes
+  const students = DB.getStudents();
+  const enrolled = cls ? (cls.students || []) : [];
+  document.getElementById('classStudentList').innerHTML = students.length
+    ? students.map(s => `
+        <label class="checkbox-item">
+          <input type="checkbox" value="${s.id}" ${enrolled.includes(s.id) ? 'checked' : ''} />
+          <span>${s.avatar} ${s.name}</span>
+        </label>`).join('')
+    : '<p style="font-size:0.85rem;color:var(--text-muted);">No students registered yet.</p>';
+}
+
+function saveClass() {
+  const classId  = document.getElementById('cClassId').value.trim().toUpperCase();
+  const name     = document.getElementById('cName').value.trim();
+  const subject  = document.getElementById('cSubject').value.trim();
+  const schedule = document.getElementById('cSchedule').value.trim();
+  const room     = document.getElementById('cRoom').value.trim();
+  const teacherId = parseInt(document.getElementById('cTeacher').value) || null;
+  const students = [...document.querySelectorAll('#classStudentList input:checked')].map(i => parseInt(i.value));
+
+  if (!classId || !name) { showToast('❌', 'Class ID and Name are required.'); return; }
+
+  if (editingClassId) {
+    // Update existing
+    DB.updateClass(editingClassId, { name, subject, schedule, room, teacherId, students });
+    showToast('✅', `${name} updated!`);
+  } else {
+    // Create new
+    const result = DB.createClass({ classId, name, subject, schedule, room, teacherId, students });
+    if (result.error) { showToast('❌', result.error); return; }
+    showToast('✅', `Class ${classId} created!`);
+  }
+
+  // Sync teacher's classes array
+  if (teacherId) DB.assignTeacherToClass(classId, teacherId);
+
+  closeModal('addClassModal');
+  loadStats(); renderClasses(); renderSessions();
+}
+
+function deleteClass(id) {
+  const cls = DB.getClassById(id);
+  if (!cls) return;
+  if (!confirm(`Delete class "${cls.name}" (${cls.classId})? This cannot be undone.`)) return;
+  DB.deleteClass(id);
+  loadStats(); renderClasses();
+  showToast('🗑️', `Class ${cls.classId} deleted.`);
+}
+
+// ── SESSIONS ──────────────────────────────────────────────
+function renderSessions() {
+  const sessions = DB.getSessions();
+  const users    = DB._get('users');
+  document.getElementById('sessionsTableBody').innerHTML = sessions.map(s => {
+    const teacher = users.find(u => u.id === s.teacherId);
+    return `
+      <tr>
+        <td><span class="badge badge-purple">${s.classId}</span> ${s.className}</td>
+        <td><code style="background:rgba(108,99,255,0.15);padding:0.2rem 0.5rem;border-radius:6px;font-size:0.85rem;color:var(--primary);">${s.code}</code></td>
+        <td>${teacher ? teacher.avatar + ' ' + teacher.name : '—'}</td>
+        <td style="color:var(--text-muted);font-size:0.85rem;">${s.date}</td>
+        <td><span class="badge ${s.active ? 'badge-green' : 'badge-red'}">${s.active ? '🟢 Active' : '🔴 Closed'}</span></td>
+        <td>
+          <button class="btn btn-sm" style="background:rgba(108,99,255,0.15);color:var(--primary);border:none;cursor:pointer;" onclick="toggleSession(${s.id},${!s.active})">
+            ${s.active ? 'Close' : 'Reopen'}
+          </button>
+        </td>
+      </tr>`;
+  }).join('');
+}
+
+function openAddSession() {
+  // Populate class dropdown from DB classes
+  const classes = DB.getClasses();
+  document.getElementById('newClassId').innerHTML = classes.length
+    ? classes.map(c => `<option value="${c.classId}">${c.classId} — ${c.name}</option>`).join('')
+    : '<option value="">No classes available</option>';
+  // Clear fields
+  document.getElementById('newCode').value  = '';
+  document.getElementById('newQuizQ').value = '';
+  document.querySelectorAll('.quiz-opt-input').forEach(i => i.value = '');
+  document.getElementById('addSessionModal').classList.add('open');
+}
+
+function generateCode() {
+  const classId = document.getElementById('newClassId').value || 'CLS';
+  const rand = Math.random().toString(36).substring(2, 5).toUpperCase();
+  document.getElementById('newCode').value = classId + '-' + rand;
+}
+
+function saveNewSession() {
+  const classId  = document.getElementById('newClassId').value;
+  const code     = document.getElementById('newCode').value.trim().toUpperCase();
+  const quizQ    = document.getElementById('newQuizQ').value.trim();
+  const opts     = [...document.querySelectorAll('.quiz-opt-input')].map(i => i.value.trim()).filter(Boolean);
+  const answer   = parseInt(document.getElementById('newQuizAnswer').value);
+
+  if (!classId || !code || !quizQ) { showToast('❌', 'Class, code, and quiz question are required.'); return; }
+  if (opts.length < 2)             { showToast('❌', 'Please add at least 2 answer options.'); return; }
+
+  const cls  = DB.getClassByClassId(classId);
+  const user = DB.currentUser();
+  DB.createSession({
+    classId,
+    className: cls ? cls.name : classId,
+    teacherId: (cls && cls.teacherId) || user.userId,
+    code,
+    date: new Date().toISOString().split('T')[0],
+    active: true,
+    quizQuestion: quizQ,
+    quizOptions: opts,
+    quizAnswer: answer,
+  });
+  closeModal('addSessionModal');
+  renderSessions();
+  showToast('✅', 'Session ' + code + ' created!');
+}
+
+function toggleSession(id, active) {
+  DB.toggleSession(id, active);
+  renderSessions();
+  showToast(active ? '🟢' : '🔴', 'Session ' + (active ? 'reopened' : 'closed') + '.');
+}
+
+// ── ATTENDANCE ────────────────────────────────────────────
+function renderAttendance() {
+  const records = DB.getAttendance();
+  const users   = DB._get('users');
+  document.getElementById('attendanceTableBody').innerHTML = records.map(r => {
+    const student = users.find(u => u.id === r.studentId);
+    return `
+      <tr>
+        <td>${student ? student.avatar + ' ' + student.name : 'Unknown'}</td>
+        <td><span class="badge badge-purple">${r.classId}</span></td>
+        <td style="color:var(--text-muted);font-size:0.85rem;">${r.date}</td>
+        <td><span class="badge ${r.status==='Present'?'badge-green':r.status==='Late'?'badge-yellow':'badge-red'}">
+          ${r.status==='Present'?'✅':r.status==='Late'?'⏰':'❌'} ${r.status}
+        </span></td>
+        <td style="color:var(--warning);">${r.points > 0 ? '+' + r.points : '—'}</td>
+        <td>${r.quizCorrect ? '<span style="color:var(--accent);">✓ Correct</span>' : '<span style="color:var(--text-muted);">✗</span>'}</td>
+      </tr>`;
+  }).join('');
+}
+
+function exportCSV() {
+  const records = DB.getAttendance();
+  const users   = DB._get('users');
+  const rows = [['Student','Class','Date','Status','Points','Quiz Correct'],
+    ...records.map(r => {
+      const s = users.find(u => u.id === r.studentId);
+      return [s?.name || 'Unknown', r.classId, r.date, r.status, r.points, r.quizCorrect];
+    })];
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([rows.map(r => r.join(',')).join('\n')], { type: 'text/csv' }));
+  a.download = 'attendance_export.csv';
+  a.click();
+  showToast('✅', 'CSV exported!');
+}
+
+// ── ANALYTICS ─────────────────────────────────────────────
+let chartsBuilt = false;
+function buildAnalyticsCharts() {
+  if (chartsBuilt) return;
+  chartsBuilt = true;
+  const classes = DB.getClasses();
+  const labels  = classes.map(c => c.classId);
+  const data    = classes.map(c => DB.getClassStats(c.classId).rate);
+  const colors  = ['rgba(108,99,255,0.7)','rgba(67,233,123,0.7)','rgba(255,101,132,0.7)','rgba(249,202,36,0.7)','rgba(79,195,247,0.7)'];
+
+  new Chart(document.getElementById('classBarChart'), {
+    type: 'bar',
+    data: { labels, datasets: [{ label: 'Attendance %', data, backgroundColor: labels.map((_,i) => colors[i % colors.length]), borderRadius: 8, borderWidth: 0 }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { min: 0, max: 100, grid: { color: 'rgba(255,255,255,0.05)' } }, x: { grid: { display: false } } } }
+  });
+
+  new Chart(document.getElementById('weeklyChart'), {
+    type: 'line',
+    data: { labels: ['Mon','Tue','Wed','Thu','Fri'], datasets: [{ label: 'Avg Attendance %', data: [85,90,88,92,87], borderColor: '#6c63ff', backgroundColor: 'rgba(108,99,255,0.15)', tension: 0.4, fill: true, pointBackgroundColor: '#6c63ff' }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { min: 60, max: 100, grid: { color: 'rgba(255,255,255,0.05)' } }, x: { grid: { display: false } } } }
+  });
+
+  const top = DB.getLeaderboard().slice(0, 5);
+  document.getElementById('topStudentsList').innerHTML = top.map((s, i) => `
+    <div style="display:flex;align-items:center;gap:1rem;padding:0.75rem 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+      <div class="rank rank-${i < 3 ? i+1 : 'other'}">${i < 3 ? ['🥇','🥈','🥉'][i] : i+1}</div>
+      <span style="font-size:1.25rem;">${s.avatar}</span>
+      <div style="flex:1;"><div style="font-weight:600;font-size:0.9rem;">${s.name}</div><div style="font-size:0.75rem;color:var(--text-muted);">${s.badges.join(' ')} 🔥 ${s.streak}-day streak</div></div>
+      <div style="font-weight:700;color:var(--warning);">${s.points.toLocaleString()} pts</div>
+    </div>`).join('');
+}
+
+// ── HELPERS ───────────────────────────────────────────────
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function toggleField(inputId, btn) {
+  const inp = document.getElementById(inputId);
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+  btn.textContent = inp.type === 'password' ? '👁️' : '🙈';
+}
+
+function doLogout() { DB.logout(); window.location.href = 'login.html'; }
+
+// Close modal on overlay click
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('open'); });
+});
+</script>
+</body>
+</html>
